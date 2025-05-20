@@ -1,0 +1,61 @@
+steps:
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_IMAGE_NAME}
+      - --image=${_DEVOPS_LOCATION}-docker.pkg.dev/${_GCP_DEVOPS_PROJECT_ID}/${_REPOSITORY_DOCKER_IMAGES}/${_IMAGE_NAME}:${_IMAGE_VERSION}
+      - --region=${_DEVOPS_LOCATION}
+      - --project=${_GCP_APP_PROJECT_ID}
+      - --memory=${_MEMORY}
+      - --min-instances=${_MIN_INSTANCES}
+      - --max-instances=${_MAX_INSTANCES}
+      - --cpu=${_CPU}
+      - --set-env-vars=IMAGE_VERSION=${_IMAGE_VERSION}
+      - --set-env-vars=GCP_APP_PROJECT_ID=${_GCP_APP_PROJECT_ID}
+      - --set-env-vars=GCP_DATA_PROJECT_ID=${_GCP_DATA_PROJECT_ID}
+      - --set-env-vars=REGION_VERTEXAI=${_REGION_VERTEXAI}
+      - --set-env-vars=URL_MM_IMAGES=${_URL_MM_IMAGES}
+      - --set-env-vars=BATCH_SIZE=${_BATCH_SIZE}
+      - --set-env-vars=NUMBER_BATCHES=${_NUMBER_BATCHES}
+      - --set-env-vars=INPUT_IMAGE_FOLDER=${_INPUT_IMAGE_FOLDER}
+      - --set-env-vars=OUTPUT_IMAGES_FOLDER=${_OUTPUT_IMAGES_FOLDER}
+      - --set-env-vars=GENERATIVE_MODEL=${_GENERATIVE_MODEL}
+      - --set-env-vars=MAX_WORKERS=${_MAX_WORKERS}
+      - --set-env-vars=ALT_MIN_LENGTH=${_ALT_MIN_LENGTH}
+      - --set-env-vars=ALT_MAX_LENGTH=${_ALT_MAX_LENGTH}
+      - --set-env-vars=ALT_MAX_ITERATIONS=${_ALT_MAX_ITERATIONS}
+      - --set-env-vars=ALT_MAX_LENGTH_PERMITTED=${_ALT_MAX_LENGTH_PERMITTED}
+      - --set-env-vars=TITLE_MIN_LENGTH=${_TITLE_MIN_LENGTH}
+      - --set-env-vars=TITLE_MAX_LENGTH=${_TITLE_MAX_LENGTH}
+      - --set-env-vars=TITLE_MAX_ITERATIONS=${_TITLE_MAX_ITERATIONS}
+      - --set-env-vars=TITLE_MAX_LENGTH_PERMITTED=${_TITLE_MAX_LENGTH_PERMITTED}
+      - --set-env-vars=DESCRIPTION_MIN_LENGTH=${_DESCRIPTION_MIN_LENGTH}
+      - --set-env-vars=DESCRIPTION_MAX_LENGTH=${_DESCRIPTION_MAX_LENGTH}
+      - --set-env-vars=DESCRIPTION_MAX_ITERATIONS=${_DESCRIPTION_MAX_ITERATIONS}
+      - --set-env-vars=DESCRIPTION_MAX_LENGTH_PERMITTED=${_DESCRIPTION_MAX_LENGTH_PERMITTED}
+      - --set-env-vars=TRANSLATIONS_MAX_LENGTH_PERMITTED=${_TRANSLATIONS_MAX_LENGTH_PERMITTED}
+      - --set-env-vars=OUTPUT_IMAGES_BUCKET=${_OUTPUT_IMAGES_BUCKET}
+      - --set-env-vars=TEST_LOCALLY=${_TEST_LOCALLY}
+      - --set-env-vars=SALESORG_LOCALE_FILE=${_SALESORG_LOCALE_FILE}
+      - --set-env-vars=BQ_TABLE_AI_TRANSLATIONS=${_BQ_TABLE_AI_TRANSLATIONS}
+      - --set-env-vars=BQ_TABLE_ALT_TEXT_TRANSLATIONS=${_BQ_TABLE_ALT_TEXT_TRANSLATIONS}
+      - --set-env-vars=BQ_TABLE_TITLE_TAG_TRANSLATIONS=${_BQ_TABLE_TITLE_TAG_TRANSLATIONS}
+      - --set-env-vars=BQ_TABLE_IMAGE_DESCRIPTION_TRANSLATIONS=${_BQ_TABLE_IMAGE_DESCRIPTION_TRANSLATIONS}
+      - --set-env-vars=API_MANAGER_TOKEN_URL=${_API_MANAGER_TOKEN_URL}
+      - --set-env-vars=API_MANAGER_USER=${_API_MANAGER_USER}
+      - --set-env-vars=API_MANAGER_PASSWORD=${_API_MANAGER_PASSWORD}
+      - --set-env-vars=API_MANAGER_GETINFOBATCH_URL=${_API_MANAGER_GETINFOBATCH_URL}
+      - --set-env-vars=API_MANAGER_SAVETEXTS_URL=${_API_MANAGER_SAVETEXTS_URL}
+
+    env:
+      - PROJECT_ID=${_GCP_APP_PROJECT_ID}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _IMAGE_NAME: just-for-fun
+  _IMAGE_VERSION: 0.10.6

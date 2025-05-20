@@ -1,0 +1,21 @@
+steps:
+
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: docker
+    args:
+      - build
+      - -t
+      - ${_DEVOPS_LOCATION}-docker.pkg.dev/${_GCP_DEVOPS_PROJECT_ID}/${_REPOSITORY_DOCKER_IMAGES}/${_IMAGE_NAME}:${_IMAGE_VERSION}
+      - --cache-from
+      - ${_DEVOPS_LOCATION}-docker.pkg.dev/${_GCP_DEVOPS_PROJECT_ID}/${_REPOSITORY_DOCKER_IMAGES}/${_IMAGE_NAME}:${_IMAGE_VERSION}
+      - --network=cloudbuild
+      - -f
+      - docker/Dockerfile
+      - .
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _IMAGE_NAME: just-for-fun
+  _IMAGE_VERSION: 0.10.6

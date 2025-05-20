@@ -1,0 +1,8 @@
+service_module_path: "src.restlayer_service.app"
+service_class: "RestlayerService"
+service_config:
+  app_version: '0.0.1'
+  app_name: 'restlayer-web-service'
+  api_prefix: '/api'
+  app_prefix: "restlayer-service"
+  is_debug: true
