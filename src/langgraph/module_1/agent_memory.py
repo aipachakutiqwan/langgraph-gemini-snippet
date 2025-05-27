@@ -62,7 +62,6 @@ builder.add_conditional_edges(
     tools_condition,
 )
 builder.add_edge("tools", "assistant")
-
 # Only use `InMemorySaver` for debugging or testing purposes.
 # For production use cases we recommend installing [langgraph-checkpoint-postgres]
 memory = MemorySaver()

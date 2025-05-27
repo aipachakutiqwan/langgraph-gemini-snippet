@@ -1,7 +1,6 @@
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 
-# Test GEMINI integration
+# TEST GEMINI INTEGRATION
 from langchain_google_genai import ChatGoogleGenerativeAI
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
@@ -16,7 +15,7 @@ messages = [msg]
 res = llm.invoke(messages)
 print(res.content)
 
-# Test Tavily integration   
+# TEST TAVILY INTEGRATION   
 from langchain_community.tools.tavily_search import TavilySearchResults
 tavily_search = TavilySearchResults(max_results=3)
 search_docs = tavily_search.invoke("What is LangGraph?")

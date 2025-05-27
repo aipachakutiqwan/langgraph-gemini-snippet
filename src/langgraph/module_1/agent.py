@@ -49,18 +49,14 @@ print(f"LLM with tools: {llm_with_tools}")
 
 # System message
 sys_msg = SystemMessage(content="You are a helpful assistant tasked with performing arithmetic on a set of inputs.")
-
 # Node
 def assistant(state: MessagesState):
    return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
-
 # Graph
 builder = StateGraph(MessagesState)
-
 # Define nodes: these do the work
 builder.add_node("assistant", assistant)
 builder.add_node("tools", ToolNode(tools))
-
 # Define edges: these determine how the control flow moves
 builder.add_edge(START, "assistant")
 builder.add_conditional_edges(
@@ -73,7 +69,6 @@ builder.add_edge("tools", "assistant")
 react_graph = builder.compile()
 # Show
 print(f"react_graph: {react_graph.get_graph(xray=True)}")
-
 messages = [HumanMessage(content="Sum 3 and 4. Multiply the output by 2. Divide the output by 7")]
 messages = react_graph.invoke({"messages": messages})
 for m in messages['messages']:

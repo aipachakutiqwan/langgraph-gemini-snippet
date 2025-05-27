@@ -8,6 +8,7 @@ messages = [AIMessage(content=f"So you said you were researching ocean mammals?"
 messages.append(HumanMessage(content=f"Yes, that's right.",name="Florentino"))
 messages.append(AIMessage(content=f"Great, what would you like to learn about.", name="Model"))
 messages.append(HumanMessage(content=f"I want to learn about the best place to see Orcas in the US.", name="Florentino"))
+
 for m in messages:
     m.pretty_print()
 
