@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+
 def multiply(a: int, b: int) -> int:
     """Multiply a and b.
 
@@ -13,6 +14,7 @@ def multiply(a: int, b: int) -> int:
         b: second int
     """
     return a * b
+
 
 # This will be a tool
 def add(a: int, b: int) -> int:
@@ -24,6 +26,7 @@ def add(a: int, b: int) -> int:
     """
     return a + b
 
+
 def divide(a: int, b: int) -> float:
     """Divide a and b.
 
@@ -33,20 +36,27 @@ def divide(a: int, b: int) -> float:
     """
     return a / b
 
+
 tools = [add, multiply, divide]
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
     temperature=0,
     max_tokens=None,
     timeout=None,
-    max_retries=2)
+    max_retries=2,
+)
 llm_with_tools = llm.bind_tools(tools)
 print(f"LLM with tools: {llm_with_tools}")
 # System message
-sys_msg = SystemMessage(content="You are a helpful assistant tasked with performing arithmetic on a set of inputs.")
+sys_msg = SystemMessage(
+    content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
+)
+
+
 # Node
 def assistant(state: MessagesState):
-   return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
+    return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
+
 
 # Graph
 builder = StateGraph(MessagesState)
@@ -73,10 +83,10 @@ config = {"configurable": {"thread_id": "1"}}
 messages = [HumanMessage(content="Add 3 and 4 and then multiply the result by 2.")]
 # Run
 messages = react_graph_memory.invoke({"messages": messages}, config)
-for m in messages['messages']:
+for m in messages["messages"]:
     m.pretty_print()
 
 messages = [HumanMessage(content="Multiply that by 10.")]
 messages = react_graph_memory.invoke({"messages": messages}, config)
-for m in messages['messages']:
+for m in messages["messages"]:
     m.pretty_print()

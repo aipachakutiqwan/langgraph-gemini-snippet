@@ -15,13 +15,14 @@ async def load_langgraph_sdk():
     input = {"messages": [HumanMessage(content="Multiply 3 by 2.")]}
     # Stream
     async for chunk in client.runs.stream(
-            thread_id=thread['thread_id'],
-            assistant_id="agent",
-            input=input,
-            stream_mode="values",
-        ):
+        thread_id=thread["thread_id"],
+        assistant_id="agent",
+        input=input,
+        stream_mode="values",
+    ):
         if chunk.data and chunk.event != "metadata":
             print("Received chunk:")
-            print(chunk.data['messages'][-1])
-asyncio.run(load_langgraph_sdk())
+            print(chunk.data["messages"][-1])
 
+
+asyncio.run(load_langgraph_sdk())

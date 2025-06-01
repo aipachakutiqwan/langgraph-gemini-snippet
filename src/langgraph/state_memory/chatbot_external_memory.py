@@ -7,13 +7,13 @@ from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
-#SQL-LITE
+# SQL-LITE
 # In memory
-conn = sqlite3.connect(":memory:", check_same_thread = False)
+conn = sqlite3.connect(":memory:", check_same_thread=False)
 db_path = "state_db/example.db"
 conn = sqlite3.connect(db_path, check_same_thread=False)
 
-# Here is our checkpointer 
+# Here is our checkpointer
 memory = SqliteSaver(conn)
 
 model = ChatGoogleGenerativeAI(
@@ -21,10 +21,13 @@ model = ChatGoogleGenerativeAI(
     temperature=0,
     max_tokens=None,
     timeout=None,
-    max_retries=2)
+    max_retries=2,
+)
+
 
 class State(MessagesState):
     summary: str
+
 
 # Define the logic to call the model
 def call_model(state: State):
@@ -41,10 +44,11 @@ def call_model(state: State):
     response = model.invoke(messages)
     return {"messages": response}
 
+
 def summarize_conversation(state: State):
     # First, we get any existing summary
     summary = state.get("summary", "")
-    # Create our summarization prompt 
+    # Create our summarization prompt
     if summary:
         # A summary already exists
         summary_message = (
@@ -59,6 +63,7 @@ def summarize_conversation(state: State):
     # Delete all but the 2 most recent messages
     delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-2]]
     return {"summary": response.content, "messages": delete_messages}
+
 
 # Determine whether to end or summarize the conversation
 def should_continue(state: State):
@@ -87,16 +92,16 @@ print(graph.get_graph())
 config = {"configurable": {"thread_id": "1"}}
 # Start conversation
 input_message = HumanMessage(content="hi! I'm Florentino")
-output = graph.invoke({"messages": [input_message]}, config) 
-for m in output['messages'][-1:]:
+output = graph.invoke({"messages": [input_message]}, config)
+for m in output["messages"][-1:]:
     m.pretty_print()
 input_message = HumanMessage(content="what's my name?")
-output = graph.invoke({"messages": [input_message]}, config) 
-for m in output['messages'][-1:]:
+output = graph.invoke({"messages": [input_message]}, config)
+for m in output["messages"][-1:]:
     m.pretty_print()
 input_message = HumanMessage(content="i like the 49ers!")
-output = graph.invoke({"messages": [input_message]}, config) 
-for m in output['messages'][-1:]:
+output = graph.invoke({"messages": [input_message]}, config)
+for m in output["messages"][-1:]:
     m.pretty_print()
 
 

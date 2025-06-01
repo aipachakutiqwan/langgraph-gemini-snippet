@@ -1,13 +1,13 @@
 {
-  "dockerfile_lines": [],
-  "graphs": {
-    "simple_graph": "./simple.py:graph",
-    "router": "./router.py:graph",
-    "agent": "./agent.py:graph"
-  },
-  "env": "./.env",
-  "python_version": "3.11",
   "dependencies": [
     "."
-  ]
+  ],
+  "dockerfile_lines": [],
+  "env": "./.env",
+  "graphs": {
+    "agent": "./agent.py:graph",
+    "router": "./router.py:graph",
+    "simple_graph": "./simple.py:graph"
+  },
+  "python_version": "3.11"
 }

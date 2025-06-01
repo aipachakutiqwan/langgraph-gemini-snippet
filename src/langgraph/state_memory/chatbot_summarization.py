@@ -10,10 +10,13 @@ model = ChatGoogleGenerativeAI(
     temperature=0,
     max_tokens=None,
     timeout=None,
-    max_retries=2)
+    max_retries=2,
+)
+
 
 class State(MessagesState):
     summary: str
+
 
 # Define the logic to call the model
 def call_model(state: State):
@@ -34,7 +37,7 @@ def call_model(state: State):
 def summarize_conversation(state: State):
     # First, we get any existing summary
     summary = state.get("summary", "")
-    # Create our summarization prompt 
+    # Create our summarization prompt
     if summary:
         # A summary already exists
         summary_message = (
@@ -50,6 +53,7 @@ def summarize_conversation(state: State):
     delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-2]]
     return {"summary": response.content, "messages": delete_messages}
 
+
 # Determine whether to end or summarize the conversation
 def should_continue(state: State):
     """Return the next node to execute."""
@@ -59,6 +63,7 @@ def should_continue(state: State):
         return "summarize_conversation"
     # Otherwise we can just end
     return END
+
 
 # ADDING MEMORY
 
@@ -82,28 +87,29 @@ config = {"configurable": {"thread_id": "1"}}
 
 # Start conversation
 input_message = HumanMessage(content="hi! I'm Florentino")
-output = graph.invoke({"messages": [input_message]}, config) 
-for m in output['messages'][-1:]:
+output = graph.invoke({"messages": [input_message]}, config)
+for m in output["messages"][-1:]:
     m.pretty_print()
 
 input_message = HumanMessage(content="what's my name?")
-output = graph.invoke({"messages": [input_message]}, config) 
-for m in output['messages'][-1:]:
+output = graph.invoke({"messages": [input_message]}, config)
+for m in output["messages"][-1:]:
     m.pretty_print()
 
 input_message = HumanMessage(content="i like the 49ers!")
-output = graph.invoke({"messages": [input_message]}, config) 
-for m in output['messages'][-1:]:
+output = graph.invoke({"messages": [input_message]}, config)
+for m in output["messages"][-1:]:
     m.pretty_print()
 
-graph.get_state(config).values.get("summary","")
+graph.get_state(config).values.get("summary", "")
 
 
-input_message = HumanMessage(content="i like Nick Bosa, isn't he the highest paid defensive player?")
-output = graph.invoke({"messages": [input_message]}, config) 
-for m in output['messages'][-1:]:
+input_message = HumanMessage(
+    content="i like Nick Bosa, isn't he the highest paid defensive player?"
+)
+output = graph.invoke({"messages": [input_message]}, config)
+for m in output["messages"][-1:]:
     m.pretty_print()
 
 
-print(graph.get_state(config).values.get("summary",""))
-
+print(graph.get_state(config).values.get("summary", ""))

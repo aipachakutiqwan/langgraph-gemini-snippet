@@ -1,11 +1,11 @@
 {
+  "dependencies": [
+    "."
+  ],
   "dockerfile_lines": [],
+  "env": "./.env",
   "graphs": {
     "chatbot": "./chatbot.py:graph"
   },
-  "env": "./.env",
-  "python_version": "3.11",
-  "dependencies": [
-    "."
-  ]
+  "python_version": "3.11"
 }
