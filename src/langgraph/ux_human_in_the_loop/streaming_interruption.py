@@ -15,11 +15,14 @@ model = ChatGoogleGenerativeAI(
     temperature=0,
     max_tokens=None,
     timeout=None,
-    max_retries=2)
+    max_retries=2,
+)
 
-# State 
+
+# State
 class State(MessagesState):
     summary: str
+
 
 # Define the logic to call the model
 def call_model(state: State, config: RunnableConfig):
@@ -36,10 +39,11 @@ def call_model(state: State, config: RunnableConfig):
     response = model.invoke(messages, config)
     return {"messages": response}
 
+
 def summarize_conversation(state: State):
     # First, we get any existing summary
     summary = state.get("summary", "")
-    # Create our summarization prompt 
+    # Create our summarization prompt
     if summary:
         # A summary already exists
         summary_message = (
@@ -55,6 +59,7 @@ def summarize_conversation(state: State):
     delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-2]]
     return {"summary": response.content, "messages": delete_messages}
 
+
 # Determine whether to end or summarize the conversation
 def should_continue(state: State):
     """Return the next node to execute."""
@@ -64,6 +69,7 @@ def should_continue(state: State):
         return "summarize_conversation"
     # Otherwise we can just end
     return END
+
 
 # Define a new graph
 workflow = StateGraph(State)
@@ -82,49 +88,78 @@ print(graph.get_graph())
 # Create a thread
 config = {"configurable": {"thread_id": "1"}}
 # Start conversation
-for chunk in graph.stream({"messages": [HumanMessage(content="hi! I'm Florentino")]}, config, stream_mode="updates"):
+for chunk in graph.stream(
+    {"messages": [HumanMessage(content="hi! I'm Florentino")]},
+    config,
+    stream_mode="updates",
+):
     print(chunk)
 # Start conversation
-for chunk in graph.stream({"messages": [HumanMessage(content="hi! I'm Florentino")]}, config, stream_mode="updates"):
-    chunk['conversation']["messages"].pretty_print()
+for chunk in graph.stream(
+    {"messages": [HumanMessage(content="hi! I'm Florentino")]},
+    config,
+    stream_mode="updates",
+):
+    chunk["conversation"]["messages"].pretty_print()
 
 # Start conversation, again
 config = {"configurable": {"thread_id": "2"}}
 # Start conversation
 input_message = HumanMessage(content="hi! I'm Conny")
 for event in graph.stream({"messages": [input_message]}, config, stream_mode="values"):
-    for m in event['messages']:
+    for m in event["messages"]:
         m.pretty_print()
-    print("***"*30)
+    print("***" * 30)
+
 
 # STREAMING TOKENS
 async def streaming_tokens():
     config = {"configurable": {"thread_id": "3"}}
     input_message = HumanMessage(content="Tell me about the 49ers NFL team")
-    async for event in graph.astream_events({"messages": [input_message]}, config, version="v2"):
-        print(f"Node: {event['metadata'].get('langgraph_node','')}. Type: {event['event']}. Name: {event['name']}")
-#asyncio.run(streaming_tokens())
+    async for event in graph.astream_events(
+        {"messages": [input_message]}, config, version="v2"
+    ):
+        print(
+            f"Node: {event['metadata'].get('langgraph_node','')}. Type: {event['event']}. Name: {event['name']}"
+        )
+
+
+# asyncio.run(streaming_tokens())
+
 
 async def streaming_tokens_conversation():
-    node_to_stream = 'conversation'
+    node_to_stream = "conversation"
     config = {"configurable": {"thread_id": "4"}}
     input_message = HumanMessage(content="Tell me about the 49ers NFL team")
-    async for event in graph.astream_events({"messages": [input_message]}, config, version="v2"):
-        # Get chat model tokens from a particular node 
-        if event["event"] == "on_chat_model_stream" and event['metadata'].get('langgraph_node','') == node_to_stream:
+    async for event in graph.astream_events(
+        {"messages": [input_message]}, config, version="v2"
+    ):
+        # Get chat model tokens from a particular node
+        if (
+            event["event"] == "on_chat_model_stream"
+            and event["metadata"].get("langgraph_node", "") == node_to_stream
+        ):
             print(event["data"])
-    
+
     config = {"configurable": {"thread_id": "5"}}
     input_message = HumanMessage(content="Tell me about the 49ers NFL team")
-    async for event in graph.astream_events({"messages": [input_message]}, config, version="v2"):
-        # Get chat model tokens from a particular node 
-        if event["event"] == "on_chat_model_stream" and event['metadata'].get('langgraph_node','') == node_to_stream:
+    async for event in graph.astream_events(
+        {"messages": [input_message]}, config, version="v2"
+    ):
+        # Get chat model tokens from a particular node
+        if (
+            event["event"] == "on_chat_model_stream"
+            and event["metadata"].get("langgraph_node", "") == node_to_stream
+        ):
             data = event["data"]
             print(data["chunk"].content, end="|")
-#asyncio.run(streaming_tokens_conversation())
+
+
+# asyncio.run(streaming_tokens_conversation())
 
 # STREAMING WITH LANGGRAPH API
 URL = "http://127.0.0.1:2024"
+
 
 # Search all hosted graphs
 async def call_assistants():
@@ -135,42 +170,56 @@ async def call_assistants():
     thread = await client.threads.create()
     # Input message
     input_message = HumanMessage(content="Multiply 2 and 3")
-    async for event in client.runs.stream(thread["thread_id"], 
-                                        assistant_id="agent", 
-                                        input={"messages": [input_message]}, 
-                                        stream_mode="values"):
+    async for event in client.runs.stream(
+        thread["thread_id"],
+        assistant_id="agent",
+        input={"messages": [input_message]},
+        stream_mode="values",
+    ):
         print("event:", event)
-#asyncio.run(call_assistants())
 
-async def call_assistants_streaming(): 
-    client = get_client(url=URL) 
+
+# asyncio.run(call_assistants())
+
+
+async def call_assistants_streaming():
+    client = get_client(url=URL)
     thread = await client.threads.create()
     input_message = HumanMessage(content="Multiply 2 and 3")
-    async for event in client.runs.stream(thread["thread_id"], 
-                                          assistant_id="agent", 
-                                          input={"messages": [input_message]}, 
-                                          stream_mode="values"):
-        messages = event.data.get('messages', None)
+    async for event in client.runs.stream(
+        thread["thread_id"],
+        assistant_id="agent",
+        input={"messages": [input_message]},
+        stream_mode="values",
+    ):
+        messages = event.data.get("messages", None)
         if messages:
             print(convert_to_messages(messages)[-1])
-        print('='*25)
-#asyncio.run(call_assistants_streaming())
+        print("=" * 25)
+
+
+# asyncio.run(call_assistants_streaming())
+
 
 async def call_assistants_streaming_messages():
-    client = get_client(url=URL) 
+    client = get_client(url=URL)
     thread = await client.threads.create()
     input_message = HumanMessage(content="Multiply 2 and 3")
-    async for event in client.runs.stream(thread["thread_id"], 
-                                        assistant_id="agent", 
-                                        input={"messages": [input_message]}, 
-                                        stream_mode="messages"):
+    async for event in client.runs.stream(
+        thread["thread_id"],
+        assistant_id="agent",
+        input={"messages": [input_message]},
+        stream_mode="messages",
+    ):
         print(event.event)
+
+
 asyncio.run(call_assistants_streaming_messages())
 
 
 async def format_calls():
 
-    client = get_client(url=URL) 
+    client = get_client(url=URL)
     thread = await client.threads.create()
     input_message = HumanMessage(content="Multiply 2 and 3")
 
@@ -192,10 +241,12 @@ async def format_calls():
             return "\n".join(formatted_calls)
         return "No tool calls"
 
-    async for event in client.runs.stream(thread["thread_id"],
-                                          assistant_id="agent",
-                                          input={"messages": [input_message]},
-                                          stream_mode="messages"):
+    async for event in client.runs.stream(
+        thread["thread_id"],
+        assistant_id="agent",
+        input={"messages": [input_message]},
+        stream_mode="messages",
+    ):
         # Handle metadata events
         if event.event == "metadata":
             print(f"Metadata: Run ID - {event.data['run_id']}")
@@ -224,5 +275,6 @@ async def format_calls():
                         finish_reason = response_metadata.get("finish_reason", "N/A")
                         print(f"Response Metadata: Finish Reason - {finish_reason}")
             print("-" * 50)
+
 
 asyncio.run(format_calls())

@@ -1,12 +1,12 @@
 {
+  "dependencies": [
+    "."
+  ],
   "dockerfile_lines": [],
+  "env": "./.env",
   "graphs": {
     "agent": "./agent.py:graph",
     "dynamic_breakpoints": "./dynamic_breakpoints.py:graph"
   },
-  "env": "./.env",
-  "python_version": "3.11",
-  "dependencies": [
-    "."
-  ]
+  "python_version": "3.11"
 }
