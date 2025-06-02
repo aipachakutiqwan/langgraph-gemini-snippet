@@ -1,10 +1,9 @@
-
-
 import asyncio
 from typing_extensions import TypedDict
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.errors import NodeInterrupt
 from langgraph.graph import START, END, StateGraph
+from langgraph_sdk import get_client
 
 class State(TypedDict):
     input: str
@@ -60,7 +59,6 @@ for event in graph.stream(None, thread_config, stream_mode="values"):
 
 # USE LANGGRAPH API
 
-from langgraph_sdk import get_client
 # This is the URL of the local development server
 
 async def breakpoints():
