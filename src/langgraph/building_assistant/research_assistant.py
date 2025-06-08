@@ -549,7 +549,7 @@ for event in graph.stream(None, thread, stream_mode="updates"):
     print("--Node--")
     node_name = next(iter(event.keys()))
     print(node_name)
-
 final_state = graph.get_state(thread)
 report = final_state.values.get('final_report')
 print(report)
+
