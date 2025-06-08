@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 from trustcall import create_extractor
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables.config import RunnableConfig
@@ -10,8 +11,13 @@ from langgraph.store.base import BaseStore
 import configuration
 
 # Initialize the LLM
-model = ChatOpenAI(model="gpt-4o", temperature=0) 
-
+model = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+)
 # Schema 
 class UserProfile(BaseModel):
     """ Profile of a user """
