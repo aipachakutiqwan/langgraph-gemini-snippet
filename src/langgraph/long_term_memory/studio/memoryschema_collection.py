@@ -7,14 +7,19 @@ from trustcall import create_extractor
 from langchain_core.messages import SystemMessage
 from langchain_core.messages import merge_message_runs
 from langchain_core.runnables.config import RunnableConfig
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.store.base import BaseStore
 import configuration
 
 # Initialize the LLM
-model = ChatOpenAI(model="gpt-4o", temperature=0) 
-
+model = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+)
 # Memory schema
 class Memory(BaseModel):
     content: str = Field(description="The main content of the memory. For example: User expressed interest in learning about French.")
