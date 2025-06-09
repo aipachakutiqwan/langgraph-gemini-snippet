@@ -120,7 +120,7 @@ async def streaming_tokens():
         {"messages": [input_message]}, config, version="v2"
     ):
         print(
-            f"Node: {event['metadata'].get('langgraph_node','')}. Type: {event['event']}. Name: {event['name']}"
+            f"Node: {event['metadata'].get('langgraph_node', '')}. Type: {event['event']}. Name: {event['name']}"
         )
 
 
@@ -218,7 +218,6 @@ asyncio.run(call_assistants_streaming_messages())
 
 
 async def format_calls():
-
     client = get_client(url=URL)
     thread = await client.threads.create()
     input_message = HumanMessage(content="Multiply 2 and 3")

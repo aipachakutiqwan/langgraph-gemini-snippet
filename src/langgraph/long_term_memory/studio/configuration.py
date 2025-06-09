@@ -6,9 +6,11 @@ from langchain_core.runnables import RunnableConfig
 from typing_extensions import Annotated
 from dataclasses import dataclass
 
+
 @dataclass(kw_only=True)
 class Configuration:
     """The configurable fields for the chatbot."""
+
     user_id: str = "default-user"
 
     @classmethod

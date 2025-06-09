@@ -11,10 +11,12 @@ from langchain_community.document_loaders import WikipediaLoader
 from langchain_community.tools import TavilySearchResults
 from langgraph_sdk import get_client
 
+
 # FAN OUT / FAN IN
 class State(TypedDict):
     # The operator.add reducer fn makes this append-only
     state: str
+
 
 class ReturnNodeValue:
     def __init__(self, node_secret: str):
@@ -24,9 +26,10 @@ class ReturnNodeValue:
         print(f"Adding {self._value} to {state['state']}")
         return {"state": [self._value]}
 
+
 # Add nodes
 builder = StateGraph(State)
-# Initialize each node with node_secret 
+# Initialize each node with node_secret
 builder.add_node("a", ReturnNodeValue("I'm A"))
 builder.add_node("b", ReturnNodeValue("I'm B"))
 builder.add_node("c", ReturnNodeValue("I'm C"))
@@ -42,7 +45,7 @@ print(graph.get_graph())
 print(graph.invoke({"state": []}))
 
 builder = StateGraph(State)
-# Initialize each node with node_secret 
+# Initialize each node with node_secret
 builder.add_node("a", ReturnNodeValue("I'm A"))
 builder.add_node("b", ReturnNodeValue("I'm B"))
 builder.add_node("c", ReturnNodeValue("I'm C"))
@@ -65,9 +68,11 @@ except InvalidUpdateError as e:
 class State(TypedDict):
     # The operator.add reducer fn makes this append-only
     state: Annotated[list, operator.add]
+
+
 # Add nodes
 builder = StateGraph(State)
-# Initialize each node with node_secret 
+# Initialize each node with node_secret
 builder.add_node("a", ReturnNodeValue("I'm A"))
 builder.add_node("b", ReturnNodeValue("I'm B"))
 builder.add_node("c", ReturnNodeValue("I'm C"))
@@ -85,7 +90,7 @@ print(graph.invoke({"state": []}))
 
 # Waiting for nodes to finish
 builder = StateGraph(State)
-# Initialize each node with node_secret 
+# Initialize each node with node_secret
 builder.add_node("a", ReturnNodeValue("I'm A"))
 builder.add_node("b", ReturnNodeValue("I'm B"))
 builder.add_node("b2", ReturnNodeValue("I'm B2"))
@@ -102,20 +107,25 @@ graph = builder.compile()
 print(graph.get_graph())
 print(graph.invoke({"state": []}))
 
+
 # Setting the order of the state updates
 def sorting_reducer(left, right):
-    """ Combines and sorts the values in a list"""
+    """Combines and sorts the values in a list"""
     if not isinstance(left, list):
         left = [left]
     if not isinstance(right, list):
         right = [right]
     return sorted(left + right, reverse=False)
+
+
 class State(TypedDict):
     # sorting_reducer will sort the values in state
     state: Annotated[list, sorting_reducer]
+
+
 # Add nodes
 builder = StateGraph(State)
-# Initialize each node with node_secret 
+# Initialize each node with node_secret
 builder.add_node("a", ReturnNodeValue("I'm A"))
 builder.add_node("b", ReturnNodeValue("I'm B"))
 builder.add_node("b2", ReturnNodeValue("I'm B2"))
@@ -140,41 +150,45 @@ llm = ChatGoogleGenerativeAI(
     timeout=None,
     max_retries=2,
 )
+
+
 class State(TypedDict):
     question: str
     answer: str
     context: Annotated[list, operator.add]
 
+
 def search_web(state):
-    """ Retrieve docs from web search """
+    """Retrieve docs from web search"""
     # Search
     tavily_search = TavilySearchResults(max_results=3)
-    search_docs = tavily_search.invoke(state['question'])
-     # Format
+    search_docs = tavily_search.invoke(state["question"])
+    # Format
     formatted_search_docs = "\n\n---\n\n".join(
         [
             f'<Document href="{doc["url"]}">\n{doc["content"]}\n</Document>'
             for doc in search_docs
         ]
     )
-    return {"context": [formatted_search_docs]} 
+    return {"context": [formatted_search_docs]}
+
 
 def search_wikipedia(state):
-    """ Retrieve docs from wikipedia """
+    """Retrieve docs from wikipedia"""
     # Search
-    search_docs = WikipediaLoader(query=state['question'], 
-                                  load_max_docs=2).load()
-     # Format
+    search_docs = WikipediaLoader(query=state["question"], load_max_docs=2).load()
+    # Format
     formatted_search_docs = "\n\n---\n\n".join(
         [
             f'<Document source="{doc.metadata["source"]}" page="{doc.metadata.get("page", "")}">\n{doc.page_content}\n</Document>'
             for doc in search_docs
         ]
     )
-    return {"context": [formatted_search_docs]} 
+    return {"context": [formatted_search_docs]}
+
 
 def generate_answer(state):
-    """ Node to answer a question """
+    """Node to answer a question"""
     # Get state
     context = state["context"]
     question = state["question"]
@@ -182,16 +196,19 @@ def generate_answer(state):
     print(f"Question: {question}")
     # Template
     answer_template = """Answer the question {question} using this context: {context}"""
-    answer_instructions = answer_template.format(question=question, 
-                                                       context=context)    
+    answer_instructions = answer_template.format(question=question, context=context)
     # Answer
-    answer = llm.invoke([SystemMessage(content=answer_instructions)]+[HumanMessage(content=f"Answer the question.")])
+    answer = llm.invoke(
+        [SystemMessage(content=answer_instructions)]
+        + [HumanMessage(content=f"Answer the question.")]
+    )
     # Append it to state
     return {"answer": answer}
 
+
 # Add nodes
 builder = StateGraph(State)
-# Initialize each node with node_secret 
+# Initialize each node with node_secret
 builder.add_node("search_web", search_web)
 builder.add_node("search_wikipedia", search_wikipedia)
 builder.add_node("generate_answer", generate_answer)
@@ -204,7 +221,8 @@ builder.add_edge("generate_answer", END)
 graph = builder.compile()
 print(graph.get_graph())
 result = graph.invoke({"question": "How were Nvidia's Q2 2024 earnings"})
-print(result['answer'].content)
+print(result["answer"].content)
+
 
 # USING LANGGRAPH API
 async def search():
@@ -212,13 +230,16 @@ async def search():
     client = get_client(url="http://127.0.0.1:2024")
     thread = await client.threads.create()
     input_question = {"question": "How were Nvidia Q2 2024 earnings?"}
-    async for event in client.runs.stream(thread["thread_id"], 
-                                        assistant_id="parallelization", 
-                                        input=input_question, 
-                                        stream_mode="values"):
-        # Check if answer has been added to state  
-        answer = event.data.get('answer', None)
+    async for event in client.runs.stream(
+        thread["thread_id"],
+        assistant_id="parallelization",
+        input=input_question,
+        stream_mode="values",
+    ):
+        # Check if answer has been added to state
+        answer = event.data.get("answer", None)
         if answer:
-            print(answer['content'])
+            print(answer["content"])
+
 
 asyncio.run(search())

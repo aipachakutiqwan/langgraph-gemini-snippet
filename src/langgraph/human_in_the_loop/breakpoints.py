@@ -139,7 +139,6 @@ async def breakpoint_example():
         stream_mode="values",
         interrupt_before=["tools"],
     ):
-
         print(f"Receiving new event of type: {chunk.event}")
         messages = chunk.data.get("messages", [])
         if messages:

@@ -1,4 +1,3 @@
-
 import json
 import uuid
 from langgraph.store.memory import InMemoryStore
@@ -19,16 +18,16 @@ namespace_for_memory = (user_id, "memories")
 # Save a memory to namespace as key and value
 key = str(uuid.uuid4())
 
-# The value needs to be a dictionary  
-value = {"food_preference" : "I like pizza"}
+# The value needs to be a dictionary
+value = {"food_preference": "I like pizza"}
 
 # Save the memory
 in_memory_store.put(namespace_for_memory, key, value)
 
-# Search 
+# Search
 memories = in_memory_store.search(namespace_for_memory)
 type(memories)
-# Metatdata 
+# Metatdata
 print(memories)
 print(memories[0].dict())
 print(memories[0].key, memories[0].value)
@@ -67,6 +66,7 @@ INSTRUCTIONS:
 Remember: Only include factual information directly stated by the user. Do not make assumptions or inferences.
 Based on the chat history below, please update the user information:"""
 
+
 def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memory from the store and use it to personalize the chatbot's response."""
     # Get the user ID from the config
@@ -78,7 +78,7 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     # Extract the actual memory content if it exists and add a prefix
     if existing_memory:
         # Value is a dictionary with a memory key
-        existing_memory_content = existing_memory.value.get('memory')
+        existing_memory_content = existing_memory.value.get("memory")
     else:
         existing_memory_content = "No existing memory found."
     # Format the memory in the system prompt
@@ -86,6 +86,7 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     # Respond using memory as well as the chat history
     response = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
+
 
 def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and save a memory to the store."""
@@ -96,16 +97,17 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
     existing_memory = store.get(namespace, "user_memory")
     # Extract the memory
     if existing_memory:
-        existing_memory_content = existing_memory.value.get('memory')
+        existing_memory_content = existing_memory.value.get("memory")
     else:
         existing_memory_content = "No existing memory found."
     # Format the memory in the system prompt
     system_msg = CREATE_MEMORY_INSTRUCTION.format(memory=existing_memory_content)
-    new_memory = model.invoke([SystemMessage(content=system_msg)]+state['messages'])
-    # Overwrite the existing memory in the store 
+    new_memory = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
+    # Overwrite the existing memory in the store
     key = "user_memory"
     # Write value as a dictionary with a memory key
     store.put(namespace, key, {"memory": new_memory.content})
+
 
 # Define the graph
 builder = StateGraph(MessagesState)
@@ -124,14 +126,14 @@ graph = builder.compile(checkpointer=within_thread_memory, store=across_thread_m
 print(json.dumps(graph.get_graph(xray=1).to_json(), indent=4))
 
 # We supply a thread ID for short-term (within-thread) memory
-# We supply a user ID for long-term (across-thread) memory 
+# We supply a user ID for long-term (across-thread) memory
 config = {"configurable": {"thread_id": "1", "user_id": "1"}}
-# User input 
+# User input
 input_messages = [HumanMessage(content="Hi, my name is Florentino")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
-# User input 
+# User input
 input_messages = [HumanMessage(content="I like to bike around Aarhus")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
@@ -139,7 +141,7 @@ for chunk in graph.stream({"messages": input_messages}, config, stream_mode="val
 
 thread = {"configurable": {"thread_id": "1"}}
 state = graph.get_state(thread).values
-for m in state["messages"]: 
+for m in state["messages"]:
     m.pretty_print()
 # Namespace for the memory to save
 user_id = "1"
@@ -149,14 +151,20 @@ print(existing_memory.dict())
 
 # We supply a user ID for across-thread memory as well as a new thread ID
 config = {"configurable": {"thread_id": "2", "user_id": "1"}}
-# User input 
-input_messages = [HumanMessage(content="Hi! Where would you recommend that I go biking?")]
+# User input
+input_messages = [
+    HumanMessage(content="Hi! Where would you recommend that I go biking?")
+]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
 
-# User input 
-input_messages = [HumanMessage(content="Great, are there any bakeries nearby that I can check out? I like a croissant after biking.")]
+# User input
+input_messages = [
+    HumanMessage(
+        content="Great, are there any bakeries nearby that I can check out? I like a croissant after biking."
+    )
+]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()

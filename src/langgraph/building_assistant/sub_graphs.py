@@ -7,6 +7,7 @@ from langgraph.graph import StateGraph, START, END
 
 # Architecture: https://cdn.prod.website-files.com/65b8cd72835ceeacd4449a53/66dbb1abf89f2d847ee6f1ff_sub-graph1.png
 
+
 # The structure of the logs
 class Log(TypedDict):
     id: str
@@ -17,7 +18,9 @@ class Log(TypedDict):
     grader: Optional[str]
     feedback: Optional[str]
 
+
 # SUBGRAPHS
+
 
 # Failure Analysis Sub-graph
 class FailureAnalysisState(TypedDict):
@@ -26,22 +29,31 @@ class FailureAnalysisState(TypedDict):
     fa_summary: str
     processed_logs: List[str]
 
+
 class FailureAnalysisOutputState(TypedDict):
     fa_summary: str
     processed_logs: List[str]
 
+
 def get_failures(state):
-    """ Get logs that contain a failure """
+    """Get logs that contain a failure"""
     cleaned_logs = state["cleaned_logs"]
     failures = [log for log in cleaned_logs if "grade" in log]
     return {"failures": failures}
 
+
 def generate_summary(state):
-    """ Generate summary of failures """
+    """Generate summary of failures"""
     failures = state["failures"]
     # Add fxn: fa_summary = summarize(failures)
     fa_summary = "Poor quality retrieval of Chroma documentation."
-    return {"fa_summary": fa_summary, "processed_logs": [f"failure-analysis-on-log-{failure['id']}" for failure in failures]}
+    return {
+        "fa_summary": fa_summary,
+        "processed_logs": [
+            f"failure-analysis-on-log-{failure['id']}" for failure in failures
+        ],
+    }
+
 
 fa_builder = StateGraph(FailureAnalysisState, output=FailureAnalysisOutputState)
 fa_builder.add_node("get_failures", get_failures)
@@ -52,6 +64,7 @@ fa_builder.add_edge("generate_summary", END)
 graph = fa_builder.compile()
 print(graph.get_graph())
 
+
 # Summarization subgraph
 class QuestionSummarizationState(TypedDict):
     cleaned_logs: List[Log]
@@ -59,15 +72,21 @@ class QuestionSummarizationState(TypedDict):
     report: str
     processed_logs: List[str]
 
+
 class QuestionSummarizationOutputState(TypedDict):
     report: str
     processed_logs: List[str]
+
 
 def generate_summary(state):
     cleaned_logs = state["cleaned_logs"]
     # Add fxn: summary = summarize(generate_summary)
     summary = "Questions focused on usage of ChatOllama and Chroma vector store."
-    return {"qs_summary": summary, "processed_logs": [f"summary-on-log-{log['id']}" for log in cleaned_logs]}
+    return {
+        "qs_summary": summary,
+        "processed_logs": [f"summary-on-log-{log['id']}" for log in cleaned_logs],
+    }
+
 
 def send_to_slack(state):
     qs_summary = state["qs_summary"]
@@ -75,7 +94,10 @@ def send_to_slack(state):
     report = "foo bar baz"
     return {"report": report}
 
-qs_builder = StateGraph(QuestionSummarizationState, output=QuestionSummarizationOutputState)
+
+qs_builder = StateGraph(
+    QuestionSummarizationState, output=QuestionSummarizationOutputState
+)
 qs_builder.add_node("generate_summary", generate_summary)
 qs_builder.add_node("send_to_slack", send_to_slack)
 qs_builder.add_edge(START, "generate_summary")
@@ -89,16 +111,20 @@ print(json.dumps(graph.get_graph().to_json(), indent=2))
 class EntryGraphState(TypedDict):
     raw_logs: List[Log]
     cleaned_logs: List[Log]
-    fa_summary: str # This will only be generated in the FA sub-graph
-    report: str # This will only be generated in the QS sub-graph
-    processed_logs:  Annotated[List[int], add] # This will be generated in BOTH sub-graphs
+    fa_summary: str  # This will only be generated in the FA sub-graph
+    report: str  # This will only be generated in the QS sub-graph
+    processed_logs: Annotated[
+        List[int], add
+    ]  # This will be generated in BOTH sub-graphs
+
 
 def clean_logs(state):
     # Get logs
     raw_logs = state["raw_logs"]
-    # Data cleaning raw_logs -> docs 
+    # Data cleaning raw_logs -> docs
     cleaned_logs = raw_logs
     return {"cleaned_logs": cleaned_logs}
+
 
 entry_builder = StateGraph(EntryGraphState)
 entry_builder.add_node("clean_logs", clean_logs)

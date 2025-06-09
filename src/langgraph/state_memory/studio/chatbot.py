@@ -22,13 +22,11 @@ class State(MessagesState):
 
 # Define the logic to call the model
 def call_model(state: State):
-
     # Get summary if it exists
     summary = state.get("summary", "")
 
     # If there is summary, then we add it to messages
     if summary:
-
         # Add summary to system message
         system_message = f"Summary of conversation earlier: {summary}"
 
@@ -57,13 +55,11 @@ def should_continue(state: State) -> Literal["summarize_conversation", "__end__"
 
 
 def summarize_conversation(state: State):
-
     # First get the summary if it exists
     summary = state.get("summary", "")
 
     # Create our summarization prompt
     if summary:
-
         # If a summary already exists, add it to the prompt
         summary_message = (
             f"This is summary of the conversation to date: {summary}\n\n"

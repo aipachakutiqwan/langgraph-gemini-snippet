@@ -22,13 +22,15 @@ from langgraph.store.base import BaseStore
 
 class UserProfile(TypedDict):
     """User profile schema with typed fields"""
+
     user_name: str  # The user's preferred name
     interests: List[str]  # A list of the user's interests
+
 
 # TypedDict instance
 user_profile: UserProfile = {
     "user_name": "Florentino",
-    "interests": ["biking", "technology", "coffee"]
+    "interests": ["biking", "technology", "coffee"],
 }
 print(user_profile)
 
@@ -41,7 +43,7 @@ namespace_for_memory = (user_id, "memory")
 key = "user_profile"
 value = user_profile
 in_memory_store.put(namespace_for_memory, key, value)
-# Search 
+# Search
 for m in in_memory_store.search(namespace_for_memory):
     print(m.dict())
 # Get the memory by namespace and key
@@ -61,7 +63,9 @@ model = ChatGoogleGenerativeAI(
 # Bind schema to model
 model_with_structure = model.with_structured_output(UserProfile)
 # Invoke the model to produce structured output that matches the schema
-structured_output = model_with_structure.invoke([HumanMessage("My name is Conny, I like to bike.")])
+structured_output = model_with_structure.invoke(
+    [HumanMessage("My name is Conny, I like to bike.")]
+)
 print(structured_output)
 
 
@@ -74,6 +78,7 @@ Here is the memory (it may be empty): {memory}"""
 CREATE_MEMORY_INSTRUCTION = """Create or update a user profile memory based on the user's chat history. 
 This will be saved for long-term memory. If there is an existing memory, simply update it. 
 Here is the existing memory (it may be empty): {memory}"""
+
 
 def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memory from the store and use it to personalize the chatbot's response."""
@@ -97,6 +102,7 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     response = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
 
+
 def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and save a memory to the store."""
     # Get the user ID from the config
@@ -116,10 +122,13 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
     # Format the existing memory in the instruction
     system_msg = CREATE_MEMORY_INSTRUCTION.format(memory=formatted_memory)
     # Invoke the model to produce structured output that matches the schema
-    new_memory = model_with_structure.invoke([SystemMessage(content=system_msg)]+state['messages'])
+    new_memory = model_with_structure.invoke(
+        [SystemMessage(content=system_msg)] + state["messages"]
+    )
     # Overwrite the existing use profile memory
     key = "user_memory"
     store.put(namespace, key, new_memory)
+
 
 # Define the graph
 builder = StateGraph(MessagesState)
@@ -138,10 +147,14 @@ graph = builder.compile(checkpointer=within_thread_memory, store=across_thread_m
 print(json.dumps(graph.get_graph(xray=1).to_json(), indent=2))
 
 # We supply a thread ID for short-term (within-thread) memory
-# We supply a user ID for long-term (across-thread) memory 
+# We supply a user ID for long-term (across-thread) memory
 config = {"configurable": {"thread_id": "1", "user_id": "1"}}
-# User input 
-input_messages = [HumanMessage(content="Hi, my name is Florentino and I like to bike around Aarhus and eat at bakeries.")]
+# User input
+input_messages = [
+    HumanMessage(
+        content="Hi, my name is Florentino and I like to bike around Aarhus and eat at bakeries."
+    )
+]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
@@ -152,37 +165,43 @@ existing_memory = across_thread_memory.get(namespace, "user_memory")
 print(existing_memory.value)
 
 
-
 class OutputFormat(BaseModel):
     preference: str
     sentence_preference_revealed: str
+
 
 class TelegramPreferences(BaseModel):
     preferred_encoding: Optional[List[OutputFormat]] = None
     favorite_telegram_operators: Optional[List[OutputFormat]] = None
     preferred_telegram_paper: Optional[List[OutputFormat]] = None
 
+
 class MorseCode(BaseModel):
     preferred_key_type: Optional[List[OutputFormat]] = None
     favorite_morse_abbreviations: Optional[List[OutputFormat]] = None
 
+
 class Semaphore(BaseModel):
     preferred_flag_color: Optional[List[OutputFormat]] = None
     semaphore_skill_level: Optional[List[OutputFormat]] = None
+
 
 class TrustFallPreferences(BaseModel):
     preferred_fall_height: Optional[List[OutputFormat]] = None
     trust_level: Optional[List[OutputFormat]] = None
     preferred_catching_technique: Optional[List[OutputFormat]] = None
 
+
 class CommunicationPreferences(BaseModel):
     telegram: TelegramPreferences
     morse_code: MorseCode
     semaphore: Semaphore
 
+
 class UserPreferences(BaseModel):
     communication_preferences: CommunicationPreferences
     trust_fall_preferences: TrustFallPreferences
+
 
 class TelegramAndTrustFallPreferences(BaseModel):
     pertinent_user_preferences: UserPreferences
@@ -214,14 +233,21 @@ except ValidationError as e:
 # TRUSTCALL FOR CREATE/UPDATE SCHEMAS
 
 # Conversation
-conversation = [HumanMessage(content="Hi, I'm Lance."), 
-                AIMessage(content="Nice to meet you, Lance."), 
-                HumanMessage(content="I really like biking around San Francisco.")]
-# Schema 
+conversation = [
+    HumanMessage(content="Hi, I'm Lance."),
+    AIMessage(content="Nice to meet you, Lance."),
+    HumanMessage(content="I really like biking around San Francisco."),
+]
+
+
+# Schema
 class UserProfile(BaseModel):
     """User profile schema with typed fields"""
+
     user_name: str = Field(description="The user's preferred name")
     interests: List[str] = Field(description="A list of the user's interests")
+
+
 # Initialize the model
 model = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
@@ -232,15 +258,15 @@ model = ChatGoogleGenerativeAI(
 )
 # Create the extractor
 trustcall_extractor = create_extractor(
-    model,
-    tools=[UserProfile],
-    tool_choice="UserProfile"
+    model, tools=[UserProfile], tool_choice="UserProfile"
 )
 # Instruction
 system_msg = "Extract the user profile from the following conversation"
 # Invoke the extractor
-result = trustcall_extractor.invoke({"messages": [SystemMessage(content=system_msg)]+conversation})
-for m in result["messages"]: 
+result = trustcall_extractor.invoke(
+    {"messages": [SystemMessage(content=system_msg)] + conversation}
+)
+for m in result["messages"]:
     m.pretty_print()
 schema = result["responses"]
 print(schema)
@@ -248,19 +274,23 @@ print(schema[0].model_dump())
 print(result["response_metadata"])
 
 # Update the conversation
-updated_conversation = [HumanMessage(content="Hi, I'm Lance."), 
-                        AIMessage(content="Nice to meet you, Lance."), 
-                        HumanMessage(content="I really like biking around San Francisco."),
-                        AIMessage(content="San Francisco is a great city! Where do you go after biking?"),
-                        HumanMessage(content="I really like to go to a bakery after biking."),]
+updated_conversation = [
+    HumanMessage(content="Hi, I'm Lance."),
+    AIMessage(content="Nice to meet you, Lance."),
+    HumanMessage(content="I really like biking around San Francisco."),
+    AIMessage(content="San Francisco is a great city! Where do you go after biking?"),
+    HumanMessage(content="I really like to go to a bakery after biking."),
+]
 
 # Update the instruction
 system_msg = f"""Update the memory (JSON doc) to incorporate new information from the following conversation"""
 
 # Invoke the extractor with the updated instruction and existing profile with the corresponding tool name (UserProfile)
-result = trustcall_extractor.invoke({"messages": [SystemMessage(content=system_msg)] + updated_conversation}, 
-                                    {"existing": {"UserProfile": schema[0].model_dump()}})  
-for m in result["messages"]: 
+result = trustcall_extractor.invoke(
+    {"messages": [SystemMessage(content=system_msg)] + updated_conversation},
+    {"existing": {"UserProfile": schema[0].model_dump()}},
+)
+for m in result["messages"]:
     m.pretty_print()
 print(result["response_metadata"])
 updated_schema = result["responses"][0]
@@ -300,18 +330,22 @@ model = ChatGoogleGenerativeAI(
     timeout=None,
     max_retries=2,
 )
-# Schema 
+
+
+# Schema
 class UserProfile(BaseModel):
-    """ Profile of a user """
+    """Profile of a user"""
+
     user_name: str = Field(description="The user's preferred name")
     user_location: str = Field(description="The user's location")
     interests: list = Field(description="A list of the user's interests")
+
 
 # Create the extractor
 trustcall_extractor = create_extractor(
     model,
     tools=[UserProfile],
-    tool_choice="UserProfile", # Enforces use of the UserProfile tool
+    tool_choice="UserProfile",  # Enforces use of the UserProfile tool
 )
 
 # Chatbot instruction
@@ -320,6 +354,7 @@ If you have memory for this user, use it to personalize your responses.
 Here is the memory (it may be empty): {memory}"""
 # Extraction instruction
 TRUSTCALL_INSTRUCTION = """Create or update the memory (JSON doc) to incorporate information from the following conversation:"""
+
 
 def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memory from the store and use it to personalize the chatbot's response."""
@@ -334,15 +369,16 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
         formatted_memory = (
             f"Name: {memory_dict.get('user_name', 'Unknown')}\n"
             f"Location: {memory_dict.get('user_location', 'Unknown')}\n"
-            f"Interests: {', '.join(memory_dict.get('interests', []))}"      
+            f"Interests: {', '.join(memory_dict.get('interests', []))}"
         )
     else:
         formatted_memory = None
     # Format the memory in the system prompt
     system_msg = MODEL_SYSTEM_MESSAGE.format(memory=formatted_memory)
     # Respond using memory as well as the chat history
-    response = model.invoke([SystemMessage(content=system_msg)]+state["messages"])
+    response = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
+
 
 def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and save a memory to the store."""
@@ -352,14 +388,23 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
     namespace = ("memory", user_id)
     existing_memory = store.get(namespace, "user_memory")
     # Get the profile as the value from the list, and convert it to a JSON doc
-    existing_profile = {"UserProfile": existing_memory.value} if existing_memory else None
+    existing_profile = (
+        {"UserProfile": existing_memory.value} if existing_memory else None
+    )
     # Invoke the extractor
-    result = trustcall_extractor.invoke({"messages": [SystemMessage(content=TRUSTCALL_INSTRUCTION)] + state["messages"], "existing": existing_profile})
+    result = trustcall_extractor.invoke(
+        {
+            "messages": [SystemMessage(content=TRUSTCALL_INSTRUCTION)]
+            + state["messages"],
+            "existing": existing_profile,
+        }
+    )
     # Get the updated profile as a JSON object
     updated_profile = result["responses"][0].model_dump()
     # Save the updated profile
     key = "user_memory"
     store.put(namespace, key, updated_profile)
+
 
 # Define the graph
 builder = StateGraph(MessagesState)
@@ -378,13 +423,13 @@ graph = builder.compile(checkpointer=within_thread_memory, store=across_thread_m
 print(graph.get_graph(xray=1).to_json())
 
 # We supply a thread ID for short-term (within-thread) memory
-# We supply a user ID for long-term (across-thread) memory 
+# We supply a user ID for long-term (across-thread) memory
 config = {"configurable": {"thread_id": "1", "user_id": "1"}}
-# User input 
+# User input
 input_messages = [HumanMessage(content="Hi, my name is Lance")]
 # Run the graph
 # TODO: Fix this section for Gemini
-'''
+"""
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
 # User input 
@@ -411,4 +456,4 @@ input_messages = [HumanMessage(content="What bakeries do you recommend for me?")
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
-'''
+"""

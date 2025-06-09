@@ -14,11 +14,16 @@ from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.store.base import BaseStore
 
+
 class Memory(BaseModel):
-    content: str = Field(description="The main content of the memory. For example: User expressed interest in learning about French.")
+    content: str = Field(
+        description="The main content of the memory. For example: User expressed interest in learning about French."
+    )
+
 
 class MemoryCollection(BaseModel):
     memories: list[Memory] = Field(description="A list of memories about the user.")
+
 
 # Initialize the model
 model = ChatGoogleGenerativeAI(
@@ -31,7 +36,9 @@ model = ChatGoogleGenerativeAI(
 # Bind schema to model
 model_with_structure = model.with_structured_output(MemoryCollection)
 # Invoke the model to produce structured output that matches the schema
-memory_collection = model_with_structure.invoke([HumanMessage("My name is Lance. I like to bike.")])
+memory_collection = model_with_structure.invoke(
+    [HumanMessage("My name is Lance. I like to bike.")]
+)
 print(memory_collection.memories)
 print(memory_collection.memories[0].model_dump())
 
@@ -47,7 +54,7 @@ in_memory_store.put(namespace_for_memory, key, value)
 key = str(uuid.uuid4())
 value = memory_collection.memories[1].model_dump()
 in_memory_store.put(namespace_for_memory, key, value)
-# Search 
+# Search
 for m in in_memory_store.search(namespace_for_memory):
     print(m.dict())
 
@@ -64,50 +71,68 @@ trustcall_extractor = create_extractor(
 # Instruction
 instruction = """Extract memories from the following conversation:"""
 # Conversation
-conversation = [HumanMessage(content="Hi, I'm Florentino."), 
-                AIMessage(content="Nice to meet you, Florentino."), 
-                HumanMessage(content="This morning I had a nice bike ride in San Francisco.")]
+conversation = [
+    HumanMessage(content="Hi, I'm Florentino."),
+    AIMessage(content="Nice to meet you, Florentino."),
+    HumanMessage(content="This morning I had a nice bike ride in San Francisco."),
+]
 # Invoke the extractor
-result = trustcall_extractor.invoke({"messages": [SystemMessage(content=instruction)] + conversation})
+result = trustcall_extractor.invoke(
+    {"messages": [SystemMessage(content=instruction)] + conversation}
+)
 # Messages contain the tool calls
 for m in result["messages"]:
     m.pretty_print()
 # Responses contain the memories that adhere to the schema
-for m in result["responses"]: 
+for m in result["responses"]:
     print(m)
-# Metadata contains the tool call  
-for m in result["response_metadata"]: 
+# Metadata contains the tool call
+for m in result["response_metadata"]:
     print(m)
 # Update the conversation
-updated_conversation = [AIMessage(content="That's great, did you do after?"), 
-                        HumanMessage(content="I went to Tartine and ate a croissant."),                        
-                        AIMessage(content="What else is on your mind?"),
-                        HumanMessage(content="I was thinking about my Japan, and going back this winter!"),]
+updated_conversation = [
+    AIMessage(content="That's great, did you do after?"),
+    HumanMessage(content="I went to Tartine and ate a croissant."),
+    AIMessage(content="What else is on your mind?"),
+    HumanMessage(content="I was thinking about my Japan, and going back this winter!"),
+]
 
 # Update the instruction
 system_msg = """Update existing memories and create new ones based on the following conversation:"""
 # We'll save existing memories, giving them an ID, key (tool name), and value
 tool_name = "Memory"
-existing_memories = [(str(i), tool_name, memory.model_dump()) for i, memory in enumerate(result["responses"])] if result["responses"] else None
+existing_memories = (
+    [
+        (str(i), tool_name, memory.model_dump())
+        for i, memory in enumerate(result["responses"])
+    ]
+    if result["responses"]
+    else None
+)
 print(existing_memories)
 # Invoke the extractor with our updated conversation and existing memories
-result = trustcall_extractor.invoke({"messages": updated_conversation, 
-                                     "existing": existing_memories})
+result = trustcall_extractor.invoke(
+    {"messages": updated_conversation, "existing": existing_memories}
+)
 # Messages from the model indicate two tool calls were made
 for m in result["messages"]:
     m.pretty_print()
 # Responses contain the memories that adhere to the schema
-for m in result["responses"]: 
+for m in result["responses"]:
     print(m)
-# Metadata contains the tool call  
-for m in result["response_metadata"]: 
+# Metadata contains the tool call
+for m in result["response_metadata"]:
     print(m)
 
 # CHATBOT WITH COLLECTION SCHEMA UPDATING
 
+
 # Memory schema
 class Memory(BaseModel):
-    content: str = Field(description="The main content of the memory. For example: User expressed interest in learning about French.")
+    content: str = Field(
+        description="The main content of the memory. For example: User expressed interest in learning about French."
+    )
+
 
 # Create the Trustcall extractor
 trustcall_extractor = create_extractor(
@@ -129,6 +154,7 @@ TRUSTCALL_INSTRUCTION = """Reflect on following interaction.
 Use the provided tools to retain any necessary memories about the user. 
 Use parallel tool calling to handle updates and insertions simultaneously:"""
 
+
 def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memories from the store and use them to personalize the chatbot's response."""
     # Get the user ID from the config
@@ -140,8 +166,9 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     info = "\n".join(f"- {mem.value['content']}" for mem in memories)
     system_msg = MODEL_SYSTEM_MESSAGE.format(memory=info)
     # Respond using memory as well as the chat history
-    response = model.invoke([SystemMessage(content=system_msg)]+state["messages"])
+    response = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
+
 
 def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and update the memory collection."""
@@ -153,22 +180,32 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
     existing_items = store.search(namespace)
     # Format the existing memories for the Trustcall extractor
     tool_name = "Memory"
-    existing_memories = ([(existing_item.key, tool_name, existing_item.value)
-                          for existing_item in existing_items]
-                          if existing_items
-                          else None
-                        )
+    existing_memories = (
+        [
+            (existing_item.key, tool_name, existing_item.value)
+            for existing_item in existing_items
+        ]
+        if existing_items
+        else None
+    )
     # Merge the chat history and the instruction
-    updated_messages=list(merge_message_runs(messages=[SystemMessage(content=TRUSTCALL_INSTRUCTION)] + state["messages"]))
+    updated_messages = list(
+        merge_message_runs(
+            messages=[SystemMessage(content=TRUSTCALL_INSTRUCTION)] + state["messages"]
+        )
+    )
     # Invoke the extractor
-    result = trustcall_extractor.invoke({"messages": updated_messages, 
-                                         "existing": existing_memories})
+    result = trustcall_extractor.invoke(
+        {"messages": updated_messages, "existing": existing_memories}
+    )
     # Save the memories from Trustcall to the store
     for r, rmeta in zip(result["responses"], result["response_metadata"]):
-        store.put(namespace,
-                  rmeta.get("json_doc_id", str(uuid.uuid4())),
-                  r.model_dump(mode="json"),
-            )
+        store.put(
+            namespace,
+            rmeta.get("json_doc_id", str(uuid.uuid4())),
+            r.model_dump(mode="json"),
+        )
+
 
 # Define the graph
 builder = StateGraph(MessagesState)
@@ -186,14 +223,14 @@ graph = builder.compile(checkpointer=within_thread_memory, store=across_thread_m
 # View
 print(graph.get_graph(xray=1))
 # We supply a thread ID for short-term (within-thread) memory
-# We supply a user ID for long-term (across-thread) memory 
+# We supply a user ID for long-term (across-thread) memory
 config = {"configurable": {"thread_id": "1", "user_id": "1"}}
-# User input 
+# User input
 input_messages = [HumanMessage(content="Hi, my name is Florentino")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
-# User input 
+# User input
 input_messages = [HumanMessage(content="I like to bike around Aarhus")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
@@ -204,16 +241,16 @@ namespace = ("memories", user_id)
 memories = across_thread_memory.search(namespace)
 for m in memories:
     print(m.dict())
-# User input 
+# User input
 input_messages = [HumanMessage(content="I also enjoy going to bakeries")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
 # Continue the conversation in a new thread.
 # We supply a thread ID for short-term (within-thread) memory
-# We supply a user ID for long-term (across-thread) memory 
+# We supply a user ID for long-term (across-thread) memory
 config = {"configurable": {"thread_id": "2", "user_id": "1"}}
-# User input 
+# User input
 input_messages = [HumanMessage(content="What bakeries do you recommend for me?")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):

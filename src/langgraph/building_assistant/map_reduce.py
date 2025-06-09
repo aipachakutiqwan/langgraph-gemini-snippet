@@ -20,38 +20,48 @@ model = ChatGoogleGenerativeAI(
     timeout=None,
     max_retries=2,
 )
+
+
 # Parallelizing joke generation
 class Subjects(BaseModel):
     subjects: list[str]
 
+
 class BestJoke(BaseModel):
     id: int
-    
+
+
 class OverallState(TypedDict):
     topic: str
     subjects: list
     jokes: Annotated[list, operator.add]
     best_selected_joke: str
 
+
 def generate_topics(state: OverallState):
     prompt = subjects_prompt.format(topic=state["topic"])
     response = model.with_structured_output(Subjects).invoke(prompt)
     return {"subjects": response.subjects}
 
+
 def continue_to_jokes(state: OverallState):
     return [Send("generate_joke", {"subject": s}) for s in state["subjects"]]
+
 
 # Joke generation (map)
 class JokeState(TypedDict):
     subject: str
 
+
 class Joke(BaseModel):
     joke: str
+
 
 def generate_joke(state: JokeState):
     prompt = joke_prompt.format(subject=state["subject"])
     response = model.with_structured_output(Joke).invoke(prompt)
     return {"jokes": [response.joke]}
+
 
 # Best joke selection (reduce)
 def best_joke(state: OverallState):
