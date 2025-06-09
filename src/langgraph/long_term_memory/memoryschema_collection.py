@@ -1,15 +1,12 @@
 import uuid
 from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.store.memory import InMemoryStore
 from trustcall import create_extractor
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import SystemMessage, AIMessage
 from langgraph.graph import StateGraph, MessagesState, START, END
-from langgraph.store.memory import InMemoryStore
 from langchain_core.messages import merge_message_runs
-from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.store.base import BaseStore

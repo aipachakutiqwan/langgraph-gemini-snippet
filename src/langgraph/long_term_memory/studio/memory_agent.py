@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from pydantic import BaseModel, Field
 
@@ -11,7 +12,6 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.messages import merge_message_runs
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from langchain_openai import ChatOpenAI
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, MessagesState, START, END
@@ -133,8 +133,13 @@ class UpdateMemory(TypedDict):
 
 
 # Initialize the model
-model = ChatOpenAI(model="gpt-4o", temperature=0)
-
+model = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+)
 ## Create the Trustcall extractors for updating the user profile and ToDo list
 profile_extractor = create_extractor(
     model,
@@ -243,7 +248,7 @@ def task_mAIstro(state: MessagesState, config: RunnableConfig, store: BaseStore)
     )
 
     # Respond using memory as well as the chat history
-    response = model.bind_tools([UpdateMemory], parallel_tool_calls=False).invoke(
+    response = model.bind_tools([UpdateMemory]).invoke(
         [SystemMessage(content=system_msg)] + state["messages"]
     )
 

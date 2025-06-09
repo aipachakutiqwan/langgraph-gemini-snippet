@@ -1,9 +1,8 @@
-import uuid
 import json
 from trustcall import create_extractor
 from pydantic import ValidationError
 from typing import List, Optional
-from typing import TypedDict, List
+from typing import TypedDict
 from langgraph.store.memory import InMemoryStore
 from pydantic import BaseModel, Field
 from langchain_core.messages import HumanMessage
@@ -11,13 +10,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.store.base import BaseStore
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import SystemMessage, AIMessage
 from langchain_core.runnables.config import RunnableConfig
-from langchain_core.messages import HumanMessage, SystemMessage
-from langgraph.graph import StateGraph, MessagesState, START, END
-from langchain_core.runnables.config import RunnableConfig
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.store.base import BaseStore
 
 
 class UserProfile(TypedDict):
