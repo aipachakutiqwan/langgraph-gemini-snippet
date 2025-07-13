@@ -1,5 +1,6 @@
 from operator import add
 from typing import Annotated
+
 from langgraph.graph import MessagesState
 from langchain_core.messages import AnyMessage
 from typing_extensions import TypedDict
@@ -177,9 +178,8 @@ try:
 except TypeError as e:
     print(f"TypeError occurred: {e}")
 
+
 # MESSAGES
-
-
 # Define a custom TypedDict that includes a list of messages with add_messages reducer
 class CustomMessagesState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
@@ -216,28 +216,31 @@ print(add_messages(initial_messages, new_message))
 initial_messages = [
     AIMessage(content="Hello! How can I assist you?", name="Model", id="1"),
     HumanMessage(
-        content="I'm looking for information on marine biology.", name="Lance", id="2"
+        content="I'm looking for information on marine biology.",
+        name="Florentino",
+        id="2",
     ),
 ]
 # New message to add
 new_message = HumanMessage(
-    content="I'm looking for information on whales, specifically", name="Lance", id="2"
+    content="I'm looking for information on whales, specifically",
+    name="Florentino",
+    id="2",
 )
 # Test
 print(add_messages(initial_messages, new_message))
 
 # REMOVAL
-
 # Message list
 messages = [AIMessage("Hi.", name="Bot", id="1")]
-messages.append(HumanMessage("Hi.", name="Lance", id="2"))
+messages.append(HumanMessage("Hi.", name="Florentino", id="2"))
 messages.append(
     AIMessage("So you said you were researching ocean mammals?", name="Bot", id="3")
 )
 messages.append(
     HumanMessage(
         "Yes, I know about whales. But what others should I learn about?",
-        name="Lance",
+        name="Florentino",
         id="4",
     )
 )

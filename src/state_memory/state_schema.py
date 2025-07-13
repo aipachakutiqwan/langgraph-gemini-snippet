@@ -2,6 +2,7 @@ import random
 from typing import Literal
 from dataclasses import dataclass
 from typing_extensions import TypedDict
+
 from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel, field_validator, ValidationError
 
@@ -79,7 +80,6 @@ builder.add_edge("node_3", END)
 graph = builder.compile()
 # View
 print(graph.get_graph())
-# print(graph.invoke(DataclassState(name="Florentino", mood="sad")))
 print(graph.invoke(DataclassState(name="Florentino", mood="mad")))
 
 

@@ -2,12 +2,11 @@ from langgraph.graph import MessagesState
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import RemoveMessage
 from langchain_core.messages import trim_messages
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-
-# MESSAGE AS STATE
 from langchain_core.messages import AIMessage, HumanMessage
 
+from src.model import llm
+
+# MESSAGE AS STATE
 messages = [AIMessage("So you said you were researching ocean mammals?", name="Bot")]
 messages.append(
     HumanMessage(
@@ -15,18 +14,8 @@ messages.append(
         name="Florentino",
     )
 )
-
 for m in messages:
     m.pretty_print()
-
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
-
 print(llm.invoke(messages))
 
 
@@ -43,14 +32,12 @@ builder.add_edge("chat_model", END)
 graph = builder.compile()
 # View
 print(graph.get_graph())
-
 output = graph.invoke({"messages": messages})
 for m in output["messages"]:
     m.pretty_print()
 
+
 # REDUCER LONG RUNNING CONVERSATIONS
-
-
 # Nodes
 def filter_messages(state: MessagesState):
     # Delete all but the 2 most recent messages
@@ -70,7 +57,6 @@ builder.add_edge(START, "filter")
 builder.add_edge("filter", "chat_model")
 builder.add_edge("chat_model", END)
 graph = builder.compile()
-
 # View
 print(graph.get_graph())
 
@@ -87,15 +73,13 @@ messages.append(
         id="4",
     )
 )
-
 # Invoke
 output = graph.invoke({"messages": messages})
 for m in output["messages"]:
     m.pretty_print()
 
+
 # FILTERING MESSAGES
-
-
 # Node
 def chat_model_node(state: MessagesState):
     return {"messages": [llm.invoke(state["messages"][-1:])]}
@@ -107,7 +91,6 @@ builder.add_node("chat_model", chat_model_node)
 builder.add_edge(START, "chat_model")
 builder.add_edge("chat_model", END)
 graph = builder.compile()
-
 # View
 print(graph.get_graph())
 
@@ -129,13 +112,7 @@ def chat_model_node(state: MessagesState):
         state["messages"],
         max_tokens=100,
         strategy="last",
-        token_counter=ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
-            temperature=0,
-            max_tokens=None,
-            timeout=None,
-            max_retries=2,
-        ),
+        token_counter=llm,
         allow_partial=False,
     )
     return {"messages": [llm.invoke(messages)]}
@@ -150,7 +127,6 @@ graph = builder.compile()
 
 # View
 print(graph.get_graph())
-
 messages.append(output["messages"][-1])
 messages.append(HumanMessage("Tell me where Orcas live!", name="Florentino"))
 
@@ -159,18 +135,11 @@ trim_messages(
     messages,
     max_tokens=100,
     strategy="last",
-    token_counter=ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
-        temperature=0,
-        max_tokens=None,
-        timeout=None,
-        max_retries=2,
-    ),
+    token_counter=llm,
     allow_partial=False,
 )
 # Invoke, using message trimming in the chat_model_node
 messages_out_trim = graph.invoke({"messages": messages})
-
 print("------------------------------------------------------")
 for m in messages_out_trim["messages"]:
     m.pretty_print()

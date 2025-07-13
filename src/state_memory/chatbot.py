@@ -3,16 +3,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, RemoveMessage
 from langgraph.graph import MessagesState
 from langgraph.graph import StateGraph, START, END
 
-# We will use this model for both the conversation and the summarization
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
+from src.model import llm
 
 
 # State class to store messages and summary
@@ -36,7 +27,7 @@ def call_model(state: State):
     else:
         messages = state["messages"]
 
-    response = model.invoke(messages)
+    response = llm.invoke(messages)
     return {"messages": response}
 
 
@@ -72,7 +63,7 @@ def summarize_conversation(state: State):
 
     # Add prompt to our history
     messages = state["messages"] + [HumanMessage(content=summary_message)]
-    response = model.invoke(messages)
+    response = llm.invoke(messages)
 
     # Delete all but the 2 most recent messages and add our summary to the state
     delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-2]]
