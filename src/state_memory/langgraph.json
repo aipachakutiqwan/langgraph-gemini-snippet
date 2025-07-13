@@ -1,0 +1,11 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "dockerfile_lines": [],
+  "env": "../../.env",
+  "graphs": {
+    "chatbot": "./chatbot.py:graph"
+  },
+  "python_version": "3.12"
+}

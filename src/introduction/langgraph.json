@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "dockerfile_lines": [],
+  "env": "../../.env",
+  "graphs": {
+    "agent": "./agent.py:react_graph",
+    "router": "./router.py:graph",
+    "simple_graph": "./simple_graph.py:graph"
+  },
+  "python_version": "3.12"
+}
