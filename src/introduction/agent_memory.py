@@ -3,8 +3,8 @@ from langgraph.graph import START, StateGraph
 from langgraph.prebuilt import tools_condition, ToolNode
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
-from langchain_google_genai import ChatGoogleGenerativeAI
 
+from src.model import llm
 
 def multiply(a: int, b: int) -> int:
     """Multiply a and b.
@@ -38,13 +38,6 @@ def divide(a: int, b: int) -> float:
 
 
 tools = [add, multiply, divide]
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
 llm_with_tools = llm.bind_tools(tools)
 print(f"LLM with tools: {llm_with_tools}")
 # System message
@@ -52,11 +45,9 @@ sys_msg = SystemMessage(
     content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
 )
 
-
 # Node
 def assistant(state: MessagesState):
     return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
-
 
 # Graph
 builder = StateGraph(MessagesState)

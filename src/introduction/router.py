@@ -3,20 +3,12 @@ from langgraph.prebuilt import tools_condition
 from langgraph.graph import MessagesState
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import HumanMessage, AIMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
+from src.model import llm
 
 
 def multiply(a: int, b: int) -> int:
     """Multiply a and b.
-
     Args:
         a: first int
         b: second int
@@ -27,11 +19,9 @@ def multiply(a: int, b: int) -> int:
 llm_with_tools = llm.bind_tools([multiply])
 print(f"llm_with_tools: {llm_with_tools}")
 
-
 # Node
 def tool_calling_llm(state: MessagesState):
     return {"messages": [llm_with_tools.invoke(state["messages"])]}
-
 
 # Build graph
 builder = StateGraph(MessagesState)
@@ -47,6 +37,7 @@ builder.add_conditional_edges(
 builder.add_edge("tools", END)
 graph = builder.compile()
 print(f"graph.get_graph: {graph.get_graph()}")
+
 conversational_flow = [
     AIMessage(content="Hello! How can I assist you?", name="Model"),
     HumanMessage(

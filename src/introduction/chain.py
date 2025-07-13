@@ -1,8 +1,9 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import MessagesState
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+
+from src.model import llm
 
 messages = [
     AIMessage(content="So you said you were researching ocean mammals?", name="Model")
@@ -17,23 +18,13 @@ messages.append(
         name="Florentino",
     )
 )
-
 for m in messages:
     m.pretty_print()
-
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
 
 result = llm.invoke(messages)
 print(f"type(result): {type(result)}")
 print(f"result: {result}")
 print(f"result.response_metadata: {result.response_metadata}")
-
 
 def multiply(a: int, b: int) -> int:
     """Multiply a and b.
@@ -44,20 +35,16 @@ def multiply(a: int, b: int) -> int:
     """
     return a * b
 
-
 llm_with_tools = llm.bind_tools([multiply])
 tool_call = llm_with_tools.invoke(
     [HumanMessage(content="What is 2 multiplied by 3", name="Florentino")]
 )
 print("tool_call.tool_calls: ", tool_call.tool_calls)
 
-
 class MessagesState(MessagesState):
-    # Add any keys needed beyond messages, which is pre-built
     pass
 
-
-# Initial state
+# Example adding messages to the state
 initial_messages = [
     AIMessage(content="Hello! How can I assist you?", name="Model"),
     HumanMessage(
@@ -69,14 +56,12 @@ new_message = AIMessage(
     content="Sure, I can help with that. What specifically are you interested in?",
     name="Model",
 )
-# Test
+# Add the new message to the initial messages
 add_messages(initial_messages, new_message)
-
 
 # Node
 def tool_calling_llm(state: MessagesState):
     return {"messages": [llm_with_tools.invoke(state["messages"])]}
-
 
 # Build graph
 builder = StateGraph(MessagesState)

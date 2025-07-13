@@ -3,8 +3,8 @@ from langgraph.prebuilt import ToolNode
 from langgraph.graph import START, StateGraph
 from langgraph.prebuilt import tools_condition
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 
+from src.model import llm
 
 def multiply(a: int, b: int) -> int:
     """Multiply a and b.
@@ -16,7 +16,6 @@ def multiply(a: int, b: int) -> int:
     return a * b
 
 
-# This will be a tool
 def add(a: int, b: int) -> int:
     """Adds a and b.
 
@@ -38,16 +37,7 @@ def divide(a: int, b: int) -> float:
 
 
 tools = [add, multiply, divide]
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
-# For this ipynb we set parallel tool calling to false as math generally is done sequentially, and this time we have 3 tools that can do math
-# the OpenAI model specifically defaults to parallel tool calling for efficiency, see https://python.langchain.com/docs/how_to/tool_calling_parallel/
-# play around with it and see how the model behaves with math equations!
+
 llm_with_tools = llm.bind_tools(tools)
 print(f"LLM with tools: {llm_with_tools}")
 
@@ -56,15 +46,13 @@ sys_msg = SystemMessage(
     content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
 )
 
-
 # Node
 def assistant(state: MessagesState):
     return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
 
-
 # Graph
 builder = StateGraph(MessagesState)
-# Define nodes: these do the work
+# Define nodes
 builder.add_node("assistant", assistant)
 builder.add_node("tools", ToolNode(tools))
 # Define edges: these determine how the control flow moves
