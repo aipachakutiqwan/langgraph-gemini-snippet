@@ -60,7 +60,7 @@ class GenerateAnalystsState(TypedDict):
 analyst_instructions = """You are tasked with creating a set of AI analyst personas. Follow these instructions carefully:
 1. First, review the research topic:
 {topic}
-2. Examine any editorial feedback that has been optionally provided to guide creation of the analysts:  
+2. Examine any editorial feedback that has been optionally provided to guide creation of the analysts:
 {human_analyst_feedback}
 3. Determine the most interesting themes based upon documents and / or feedback above.
 4. Pick the top {max_analysts} themes.
@@ -200,7 +200,7 @@ class SearchQuery(BaseModel):
     search_query: str = Field(None, description="Search query for retrieval.")
 
 
-question_instructions = """You are an analyst tasked with interviewing an expert to learn about a specific topic. 
+question_instructions = """You are an analyst tasked with interviewing an expert to learn about a specific topic.
 Your goal is boil down to interesting and specific insights related to your topic.
 1. Interesting: Insights that people will find surprising or non-obvious.
 2. Specific: Insights that avoid generalities and include specific examples from the expert.
@@ -228,8 +228,8 @@ def generate_question(state: InterviewState):
 tavily_search = TavilySearchResults(max_results=3)
 # Search query writing
 search_instructions = SystemMessage(
-    content=f"""You will be given a conversation between an analyst and an expert. 
-Your goal is to generate a well-structured query for use in retrieval and / or web-search related to the conversation. 
+    content=f"""You will be given a conversation between an analyst and an expert.
+Your goal is to generate a well-structured query for use in retrieval and / or web-search related to the conversation.
 First, analyze the full conversation.
 Pay particular attention to the final question posed by the analyst.
 Convert this final question into a well-structured web search query"""
@@ -273,18 +273,18 @@ def search_wikipedia(state: InterviewState):
 
 
 answer_instructions = """You are an expert being interviewed by an analyst.
-Here is analyst area of focus: {goals}. 
+Here is analyst area of focus: {goals}.
 You goal is to answer a question posed by the interviewer.
 To answer question, use this context:
 {context}
 When answering questions, follow these guidelines:
-1. Use only the information provided in the context. 
+1. Use only the information provided in the context.
 2. Do not introduce external information or make assumptions beyond what is explicitly stated in the context.
 3. The context contain sources at the topic of each individual document.
-4. Include these sources your answer next to any relevant statements. For example, for source # 1 use [1]. 
+4. Include these sources your answer next to any relevant statements. For example, for source # 1 use [1].
 5. List your sources in order at the bottom of your answer. [1] Source 1, [2] Source 2, etc
-6. If the source is: <Document source="assistant/docs/llama3_1.pdf" page="7"/>' then just list: 
-[1] assistant/docs/llama3_1.pdf, page 7 
+6. If the source is: <Document source="assistant/docs/llama3_1.pdf" page="7"/>' then just list:
+[1] assistant/docs/llama3_1.pdf, page 7
 And skip the addition of the brackets as well as the Document source preamble in your citation."""
 
 
@@ -333,9 +333,9 @@ def route_messages(state: InterviewState, name: str = "expert"):
     return "ask_question"
 
 
-section_writer_instructions = """You are an expert technical writer. 
+section_writer_instructions = """You are an expert technical writer.
 Your task is to create a short, easily digestible section of a report based on a set of source documents.
-1. Analyze the content of the source documents: 
+1. Analyze the content of the source documents:
 - The name of each source document is at the start of the document, with the <Document tag.
 2. Create a report structure using markdown formatting:
 - Use ## for the section title
@@ -344,7 +344,7 @@ Your task is to create a short, easily digestible section of a report based on a
 a. Title (## header)
 b. Summary (### header)
 c. Sources (### header)
-4. Make your title engaging based upon the focus area of the analyst: 
+4. Make your title engaging based upon the focus area of the analyst:
 {focus}
 5. For the summary section:
 - Set up summary with general background / context related to the focus area of the analyst
@@ -466,20 +466,20 @@ def initiate_all_interviews(state: ResearchGraphState):
         ]
 
 
-report_writer_instructions = """You are a technical writer creating a report on this overall topic: 
+report_writer_instructions = """You are a technical writer creating a report on this overall topic:
 {topic}
-You have a team of analysts. Each analyst has done two things: 
+You have a team of analysts. Each analyst has done two things:
 1. They conducted an interview with an expert on a specific sub-topic.
 2. They write up their finding into a memo.
 Your task:
 1. You will be given a collection of memos from your analysts.
 2. Think carefully about the insights from each memo.
-3. Consolidate these into a crisp overall summary that ties together the central ideas from all of the memos. 
+3. Consolidate these into a crisp overall summary that ties together the central ideas from all of the memos.
 4. Summarize the central points in each memo into a cohesive single narrative.
 To format your report:
-1. Use markdown formatting. 
+1. Use markdown formatting.
 2. Include no pre-amble for the report.
-3. Use no sub-heading. 
+3. Use no sub-heading.
 4. Start your report with a single title header: ## Insights
 5. Do not mention any analyst names in your report.
 6. Preserve any citations in the memos, which will be annotated in brackets, for example [1] or [2].
@@ -487,7 +487,7 @@ To format your report:
 8. List your sources in order and do not repeat.
 [1] Source 1
 [2] Source 2
-Here are the memos from your analysts to build your report from: 
+Here are the memos from your analysts to build your report from:
 {context}"""
 
 
@@ -514,9 +514,9 @@ You job is to write a crisp and compelling introduction or conclusion section.
 The user will instruct you whether to write the introduction or conclusion.
 Include no pre-amble for either section.
 Target around 100 words, crisply previewing (for introduction) or recapping (for conclusion) all of the sections of the report.
-Use markdown formatting. 
+Use markdown formatting.
 For your introduction, create a compelling title and use the # header for the title.
-For your introduction, use ## Introduction as the section header. 
+For your introduction, use ## Introduction as the section header.
 For your conclusion, use ## Conclusion as the section header.
 Here are the sections to reflect on for writing: {formatted_str_sections}"""
 

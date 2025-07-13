@@ -37,7 +37,7 @@ trustcall_extractor = create_extractor(
 )
 
 # Chatbot instruction
-MODEL_SYSTEM_MESSAGE = """You are a helpful assistant with memory that provides information about the user. 
+MODEL_SYSTEM_MESSAGE = """You are a helpful assistant with memory that provides information about the user.
 If you have memory for this user, use it to personalize your responses.
 Here is the memory (it may be empty): {memory}"""
 

@@ -64,13 +64,13 @@ print(structured_output)
 
 
 # Chatbot instruction
-MODEL_SYSTEM_MESSAGE = """You are a helpful assistant with memory that provides information about the user. 
+MODEL_SYSTEM_MESSAGE = """You are a helpful assistant with memory that provides information about the user.
 If you have memory for this user, use it to personalize your responses.
 Here is the memory (it may be empty): {memory}"""
 
 # Create new memory from the chat history and any existing memory
-CREATE_MEMORY_INSTRUCTION = """Create or update a user profile memory based on the user's chat history. 
-This will be saved for long-term memory. If there is an existing memory, simply update it. 
+CREATE_MEMORY_INSTRUCTION = """Create or update a user profile memory based on the user's chat history.
+This will be saved for long-term memory. If there is an existing memory, simply update it.
 Here is the existing memory (it may be empty): {memory}"""
 
 
@@ -215,10 +215,12 @@ Customer: Perfect! Send it by your fastest carrier pigeon.
 Operator: It'll be there within the hour, sir."""
 # Invoke the model
 try:
-    result = model_with_structure.invoke(f"""Extract the preferences from the following conversation:
+    result = model_with_structure.invoke(
+        f"""Extract the preferences from the following conversation:
     <convo>
     {conversation}
-    </convo>""")
+    </convo>"""
+    )
     print(json.dumps(result.model_dump(), indent=2))
 except ValidationError as e:
     print(e)
@@ -343,7 +345,7 @@ trustcall_extractor = create_extractor(
 )
 
 # Chatbot instruction
-MODEL_SYSTEM_MESSAGE = """You are a helpful assistant with memory that provides information about the user. 
+MODEL_SYSTEM_MESSAGE = """You are a helpful assistant with memory that provides information about the user.
 If you have memory for this user, use it to personalize your responses.
 Here is the memory (it may be empty): {memory}"""
 # Extraction instruction
@@ -426,7 +428,7 @@ input_messages = [HumanMessage(content="Hi, my name is Lance")]
 """
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
-# User input 
+# User input
 input_messages = [HumanMessage(content="I like to bike around San Francisco")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
@@ -437,15 +439,15 @@ namespace = ("memory", user_id)
 existing_memory = across_thread_memory.get(namespace, "user_memory")
 print(existing_memory.dict())
 existing_memory.value
-# User input 
+# User input
 input_messages = [HumanMessage(content="I also enjoy going to bakeries")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
 # We supply a thread ID for short-term (within-thread) memory
-# We supply a user ID for long-term (across-thread) memory 
+# We supply a user ID for long-term (across-thread) memory
 config = {"configurable": {"thread_id": "2", "user_id": "1"}}
-# User input 
+# User input
 input_messages = [HumanMessage(content="What bakeries do you recommend for me?")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):

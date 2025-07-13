@@ -3,7 +3,7 @@
 
 Welcome to the Python code snippet for LangGraph using Google Gemini (ChatGoogleGenerativeAI), and thank you for your interest in contributing!
 
-This guide is chiefly for users wishing to contribute to the project services template version.
+This guide is chiefly for users wishing to contribute to the project.
 
 
 ## ⚡ Development
@@ -28,7 +28,10 @@ Based on [UV](https://docs.astral.sh/uv/getting-started/installation/)
     ```bash
     uv pip install -r pyproject.toml --group dev
     ```
-
+- Remove Python libraries
+    ```bash
+    uv remove pandas
+    ```
 
 #### 🌱 Initializing pre-commit
 
