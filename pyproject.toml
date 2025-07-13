@@ -1,7 +1,7 @@
 [project]
-name = "just-for-fun"
+name = "langgraph-gemini-snippet"
 version = "0.10.6"
-description = "just-for-fun"
+description = "langgraph-gemini-snippet"
 requires-python = ">=3.12"
 
 dependencies = [
@@ -68,13 +68,6 @@ include = "poe.toml"
 
 [tool.pdm]
 distribution = false
-
-[[tool.pdm.source]]
-name = "prj-caip-prod-shared-14pl-artifactregistry"
-url = "https://europe-west3-python.pkg.dev/prj-caip-prod-shared-14pl/python-packages/simple"
-verify_ssl = true
-include_packages = ["ai-*"]
-exclude_packages = ["*"]
 
 
 [dependency-groups]

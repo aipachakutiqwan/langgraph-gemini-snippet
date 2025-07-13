@@ -1,63 +1,34 @@
 # CONTRIBUTING
 
 
-Welcome to the project template to create AI services, and thank you for your interest in contributing!
+Welcome to the Python code snippet for LangGraph using Google Gemini (ChatGoogleGenerativeAI), and thank you for your interest in contributing!
 
 This guide is chiefly for users wishing to contribute to the project services template version.
 
 
 ## ⚡ Development
 
-Below are the tools used during development. Please ensure that you always **start your contributions by creating a feature branch from the "release-dev" branch.**
+Below are the tools used during development. Please ensure that you always **start your contributions by creating a feature branch from the "main" branch.**
 
 :exclamation: Note: Ensure that **Python version 3.12.x** is installed on your local machine, as it is the version compatible with this documentation.
 
 #### 🌱 Managing dependencies
 
-Based on [PDM](https://pdm-project.org/latest/)
+Based on [UV](https://docs.astral.sh/uv/getting-started/installation/)
 
-- [Install PDM](https://pdm-project.org/latest/#installation)
+- Create Python environment
     ```bash
-    pip install --user pdm
+    uv venv
+    ```
+- Activate environment
+    ```bash
+    source .venv/bin/activate
+    ```
+- Install Python libraries
+    ```bash
+    uv pip install -r pyproject.toml --group dev
     ```
 
-- Initialize PDM and select the environment with Python 3.12.x
-    ```bash
-    pdm init
-    ```
-- Check the PDM version: currently using version 2.19.3.
-    ```bash
-    pdm --version
-    ```
-
-- Create a virtual environment in your home repository, including pre-configured "test" and "dev" dependencies.
-    ```bash
-    pdm install -G:all
-    ```
-- If you would like to add dependencies (e.g. FastAPI).
-    ```bash
-    pdm add fastapi
-    ```
-- If you would like to add "dev" dependencies (e.g httpx).
-    ```bash
-    pdm add -dG dev httpx
-    ```
-- If you would like to add "test" dependencies (e.g pandas).
-    ```bash
-    pdm add -G test pandas
-    ```
-- If you would like to remove packages.
-    ```bash
-    pdm remove fastapi
-    ```
-- Use the command to display the local path environment. Once the path is displayed, source it.
-    ```bash
-    pdm venv activate
-    ```
-- See local environment structure.
-    ```bash
-    pdm list --tree
-    ```
 
 #### 🌱 Initializing pre-commit
 
@@ -113,7 +84,7 @@ Based on [Poe The Poet](https://poethepoet.natn.io/index.html)
 
 Here are the steps to create a Pull Request.
 
-- Make your code contributions in a dedicated feature branch (**created from "release-dev" branch**).
+- Make your code contributions in a dedicated feature branch (**created from "main" branch**).
 
 - Run the linter to check the code content.
     ```bash
@@ -124,15 +95,14 @@ Here are the steps to create a Pull Request.
     poe test
     ```
 - Commit your changes using Commitizen for standardized commit messages.
-
     ```bash
     cz commit
     ```
-- If necessary, create a new release version and bump the version number. **An initial bump is mandatory after any change is released to production.**
+- If necessary, create a new release version and bump the version number.
     ```bash
     cz bump --changelog
     ```
-- If the previous step was successful, push your code and create a pull request to the "release-dev" branch for code review and deployment to the GCP development environment.
+- If the previous step was successful, push your code and create a pull request to the "main" branch for code review.
 
 
-## :pushpin: Common issues
+## :pushpin: Next steps
