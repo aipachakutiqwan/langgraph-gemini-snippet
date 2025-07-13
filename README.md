@@ -1,3 +1,3 @@
 # langgraph-courses
 
-Python snippet code from Langchain courses
+Python code snippet for LangGraph using Google Gemini (ChatGoogleGenerativeAI)

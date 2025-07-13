@@ -1,20 +1,33 @@
 # CONTRIBUTING
 
 
-Welcome to the project template to create AI services, and thank you for your interest in contributing!
+Welcome to the Python code snippet for LangGraph using Google Gemini (ChatGoogleGenerativeAI), and thank you for your interest in contributing!
 
 This guide is chiefly for users wishing to contribute to the project services template version.
 
 
 ## ⚡ Development
 
-Below are the tools used during development. Please ensure that you always **start your contributions by creating a feature branch from the "release-dev" branch.**
+Below are the tools used during development. Please ensure that you always **start your contributions by creating a feature branch from the "main" branch.**
 
 :exclamation: Note: Ensure that **Python version 3.12.x** is installed on your local machine, as it is the version compatible with this documentation.
 
 #### 🌱 Managing dependencies
 
 Based on [UV](https://docs.astral.sh/uv/getting-started/installation/)
+
+- Create Python environment
+    ```bash
+    uv venv
+    ```
+- Activate environment
+    ```bash
+    source .venv/bin/activate
+    ```
+- Install Python libraries
+    ```bash
+    uv pip install -r pyproject.toml --group dev
+    ```
 
 
 #### 🌱 Initializing pre-commit
@@ -71,7 +84,7 @@ Based on [Poe The Poet](https://poethepoet.natn.io/index.html)
 
 Here are the steps to create a Pull Request.
 
-- Make your code contributions in a dedicated feature branch (**created from "release-dev" branch**).
+- Make your code contributions in a dedicated feature branch (**created from "main" branch**).
 
 - Run the linter to check the code content.
     ```bash
@@ -82,15 +95,14 @@ Here are the steps to create a Pull Request.
     poe test
     ```
 - Commit your changes using Commitizen for standardized commit messages.
-
     ```bash
     cz commit
     ```
-- If necessary, create a new release version and bump the version number. **An initial bump is mandatory after any change is released to production.**
+- If necessary, create a new release version and bump the version number.
     ```bash
     cz bump --changelog
     ```
-- If the previous step was successful, push your code and create a pull request to the "release-dev" branch for code review and deployment to the GCP development environment.
+- If the previous step was successful, push your code and create a pull request to the "main" branch for code review.
 
 
 ## :pushpin: Next steps

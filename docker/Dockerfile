@@ -1,4 +1,4 @@
-FROM europe-west3-docker.pkg.dev/prj-caip-prod-shared-14pl/docker-images/ai-python-3-12-slim:1.0.0
+FROM python-3-12-slim
 
 USER root
 RUN apt-get update && apt-get install -y libldap2-dev libsasl2-dev libssl-dev curl gnupg2
