@@ -3,7 +3,7 @@ from langgraph_sdk import get_client
 from langchain_core.messages import HumanMessage
 
 # This example demonstrates how to use the LangGraph SDK to interact with a LangGraph server.
-# Go to src/introduction/studio and activate the server by running: langgraph dev 
+# Activate the server by running: langgraph dev 
 
 async def load_langgraph_sdk():
     # This is the URL of the local development server
