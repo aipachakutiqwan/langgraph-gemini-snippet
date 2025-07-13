@@ -1,0 +1,8 @@
+service_module_path: "src.app"
+service_class: "app"
+service_config:
+  app_version: '0.0.1'
+  app_name: 'app'
+  api_prefix: '/api'
+  app_prefix: "app"
+  is_debug: true

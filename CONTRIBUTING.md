@@ -14,50 +14,8 @@ Below are the tools used during development. Please ensure that you always **sta
 
 #### 🌱 Managing dependencies
 
-Based on [PDM](https://pdm-project.org/latest/)
+Based on [UV](https://docs.astral.sh/uv/getting-started/installation/)
 
-- [Install PDM](https://pdm-project.org/latest/#installation)
-    ```bash
-    pip install --user pdm
-    ```
-
-- Initialize PDM and select the environment with Python 3.12.x
-    ```bash
-    pdm init
-    ```
-- Check the PDM version: currently using version 2.19.3.
-    ```bash
-    pdm --version
-    ```
-
-- Create a virtual environment in your home repository, including pre-configured "test" and "dev" dependencies.
-    ```bash
-    pdm install -G:all
-    ```
-- If you would like to add dependencies (e.g. FastAPI).
-    ```bash
-    pdm add fastapi
-    ```
-- If you would like to add "dev" dependencies (e.g httpx).
-    ```bash
-    pdm add -dG dev httpx
-    ```
-- If you would like to add "test" dependencies (e.g pandas).
-    ```bash
-    pdm add -G test pandas
-    ```
-- If you would like to remove packages.
-    ```bash
-    pdm remove fastapi
-    ```
-- Use the command to display the local path environment. Once the path is displayed, source it.
-    ```bash
-    pdm venv activate
-    ```
-- See local environment structure.
-    ```bash
-    pdm list --tree
-    ```
 
 #### 🌱 Initializing pre-commit
 
@@ -135,4 +93,4 @@ Here are the steps to create a Pull Request.
 - If the previous step was successful, push your code and create a pull request to the "release-dev" branch for code review and deployment to the GCP development environment.
 
 
-## :pushpin: Common issues
+## :pushpin: Next steps

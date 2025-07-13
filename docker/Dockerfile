@@ -8,12 +8,6 @@ RUN apt-get update
 
 ARG USERNAME=python
 
-ARG AI_ARCH_COMMONS_NAME=ai-arch-commons
-ARG AI_ARCH_COMMONS_VERSION=0.4.0
-
-ARG AI_IO_CONNECTORS_NAME=ai-io-connectors
-ARG AI_IO_CONNECTORS_VERSION=0.5.0
-
 USER ${USERNAME}
 ARG WORKSPACE=/home/${USERNAME}/agent
 WORKDIR ${WORKSPACE}
@@ -31,12 +25,6 @@ COPY pyproject.toml /home/${USERNAME}/agent/
 USER root
 RUN chmod 777 -R /home/${USERNAME}/agent/
 USER ${USERNAME}
-
-RUN pip install keyrings.google-artifactregistry-auth
-RUN pip install --extra-index-url https://europe-west3-python.pkg.dev/prj-caip-prod-shared-14pl/python-packages/simple/ ${AI_ARCH_COMMONS_NAME}==${AI_ARCH_COMMONS_VERSION}
-RUN pip install --extra-index-url https://europe-west3-python.pkg.dev/prj-caip-prod-shared-14pl/python-packages/simple/ ${AI_IO_CONNECTORS_NAME}==${AI_IO_CONNECTORS_VERSION}
-RUN pip install .
-
 
 ENV PYTHONPATH "${PYTHONPATH}:/home/${USERNAME}/agent:/home/${USERNAME}/agent/src"
 ENV PYTHONUNBUFFERED=0
