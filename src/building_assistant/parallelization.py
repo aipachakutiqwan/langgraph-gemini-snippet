@@ -200,7 +200,7 @@ def generate_answer(state):
     # Answer
     answer = llm.invoke(
         [SystemMessage(content=answer_instructions)]
-        + [HumanMessage(content=f"Answer the question.")]
+        + [HumanMessage(content="Answer the question.")]
     )
     # Append it to state
     return {"answer": answer}
@@ -226,7 +226,7 @@ print(result["answer"].content)
 
 # USING LANGGRAPH API
 async def search():
-    print(f"Running parallelization example with LangGraph API")
+    print("Running parallelization example with LangGraph API")
     client = get_client(url="http://127.0.0.1:2024")
     thread = await client.threads.create()
     input_question = {"question": "How were Nvidia Q2 2024 earnings?"}

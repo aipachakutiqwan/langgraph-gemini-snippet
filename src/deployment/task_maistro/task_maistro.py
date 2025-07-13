@@ -12,10 +12,8 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.store.base import BaseStore
-from langgraph.store.memory import InMemoryStore
 
 import configuration
 

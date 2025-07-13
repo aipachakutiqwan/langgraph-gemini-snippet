@@ -6,13 +6,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 # MESSAGE AS STATE
-from pprint import pprint
 from langchain_core.messages import AIMessage, HumanMessage
 
-messages = [AIMessage(f"So you said you were researching ocean mammals?", name="Bot")]
+messages = [AIMessage("So you said you were researching ocean mammals?", name="Bot")]
 messages.append(
     HumanMessage(
-        f"Yes, I know about whales. But what others should I learn about?",
+        "Yes, I know about whales. But what others should I learn about?",
         name="Florentino",
     )
 )
@@ -113,7 +112,7 @@ graph = builder.compile()
 print(graph.get_graph())
 
 messages.append(output["messages"][-1])
-messages.append(HumanMessage(f"Tell me more about Narwhals!", name="Florentino"))
+messages.append(HumanMessage("Tell me more about Narwhals!", name="Florentino"))
 for m in messages:
     m.pretty_print()
 
@@ -153,7 +152,7 @@ graph = builder.compile()
 print(graph.get_graph())
 
 messages.append(output["messages"][-1])
-messages.append(HumanMessage(f"Tell me where Orcas live!", name="Florentino"))
+messages.append(HumanMessage("Tell me where Orcas live!", name="Florentino"))
 
 # Example of trimming messages
 trim_messages(

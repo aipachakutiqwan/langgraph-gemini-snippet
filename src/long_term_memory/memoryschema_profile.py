@@ -279,7 +279,7 @@ updated_conversation = [
 ]
 
 # Update the instruction
-system_msg = f"""Update the memory (JSON doc) to incorporate new information from the following conversation"""
+system_msg = "Update the memory (JSON doc) to incorporate new information from the following conversation"
 
 # Invoke the extractor with the updated instruction and existing profile with the corresponding tool name (UserProfile)
 result = trustcall_extractor.invoke(

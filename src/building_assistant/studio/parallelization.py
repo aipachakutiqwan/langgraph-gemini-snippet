@@ -3,7 +3,6 @@ from typing import Annotated
 from typing_extensions import TypedDict
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from langchain_community.document_loaders import WikipediaLoader
@@ -76,7 +75,7 @@ def generate_answer(state):
     # Answer
     answer = llm.invoke(
         [SystemMessage(content=answer_instructions)]
-        + [HumanMessage(content=f"Answer the question.")]
+        + [HumanMessage(content="Answer the question.")]
     )
 
     # Append it to state

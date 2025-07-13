@@ -5,15 +5,15 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 
 messages = [
-    AIMessage(content=f"So you said you were researching ocean mammals?", name="Model")
+    AIMessage(content="So you said you were researching ocean mammals?", name="Model")
 ]
-messages.append(HumanMessage(content=f"Yes, that's right.", name="Florentino"))
+messages.append(HumanMessage(content="Yes, that's right.", name="Florentino"))
 messages.append(
-    AIMessage(content=f"Great, what would you like to learn about.", name="Model")
+    AIMessage(content="Great, what would you like to learn about.", name="Model")
 )
 messages.append(
     HumanMessage(
-        content=f"I want to learn about the best place to see Orcas in the US.",
+        content="I want to learn about the best place to see Orcas in the US.",
         name="Florentino",
     )
 )
@@ -47,9 +47,9 @@ def multiply(a: int, b: int) -> int:
 
 llm_with_tools = llm.bind_tools([multiply])
 tool_call = llm_with_tools.invoke(
-    [HumanMessage(content=f"What is 2 multiplied by 3", name="Florentino")]
+    [HumanMessage(content="What is 2 multiplied by 3", name="Florentino")]
 )
-print(f"tool_call.tool_calls: ", tool_call.tool_calls)
+print("tool_call.tool_calls: ", tool_call.tool_calls)
 
 
 class MessagesState(MessagesState):
