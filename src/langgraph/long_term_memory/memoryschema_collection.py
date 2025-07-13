@@ -141,14 +141,14 @@ trustcall_extractor = create_extractor(
 )
 
 # Chatbot instruction
-MODEL_SYSTEM_MESSAGE = """You are a helpful chatbot. You are designed to be a companion to a user. 
+MODEL_SYSTEM_MESSAGE = """You are a helpful chatbot. You are designed to be a companion to a user.
 You have a long term memory which keeps track of information you learn about the user over time.
-Current Memory (may include updated memories from this conversation): 
+Current Memory (may include updated memories from this conversation):
 {memory}"""
 
 # Trustcall instruction
-TRUSTCALL_INSTRUCTION = """Reflect on following interaction. 
-Use the provided tools to retain any necessary memories about the user. 
+TRUSTCALL_INSTRUCTION = """Reflect on following interaction.
+Use the provided tools to retain any necessary memories about the user.
 Use parallel tool calling to handle updates and insertions simultaneously:"""
 
 

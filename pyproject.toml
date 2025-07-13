@@ -5,14 +5,6 @@ description = "langgraph-gemini-snippet"
 requires-python = ">=3.12"
 
 dependencies = [
-    "keyrings-google-artifactregistry-auth>=1.1.2",
-    "uvicorn>=0.32.0",
-    "vertexai==1.71.1",
-    "pandas==2.2.3",
-    "tqdm==4.67.1",
-    "pillow>=11.1.0",
-    "certifi>=2025.1.31",
-    "google-adk>=0.0.1",
     "langgraph>=0.4.5",
     "langgraph-prebuilt>=0.1.8",
     "langgraph-sdk>=0.1.69",
@@ -20,8 +12,6 @@ dependencies = [
     "langsmith>=0.3.42",
     "langchain-community>=0.3.24",
     "langchain-core>=0.3.60",
-    "langchain-openai>=0.3.17",
-    "notebook>=7.4.2",
     "tavily-python>=0.7.2",
     "wikipedia>=1.4.0",
     "trustcall>=0.0.39",

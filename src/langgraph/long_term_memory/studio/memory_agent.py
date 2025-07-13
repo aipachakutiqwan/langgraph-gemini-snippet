@@ -150,12 +150,12 @@ profile_extractor = create_extractor(
 ## Prompts
 
 # Chatbot instruction for choosing what to update and what tools to call
-MODEL_SYSTEM_MESSAGE = """You are a helpful chatbot. 
+MODEL_SYSTEM_MESSAGE = """You are a helpful chatbot.
 
 You are designed to be a companion to a user, helping them keep track of their ToDo list.
 
 You have a long term memory which keeps track of three things:
-1. The user's profile (general information about them) 
+1. The user's profile (general information about them)
 2. The user's ToDo list
 3. General instructions for updating the ToDo list
 
@@ -176,7 +176,7 @@ Here are the current user-specified preferences for updating the ToDo list (may 
 
 Here are your instructions for reasoning about the user's messages:
 
-1. Reason carefully about the user's messages as presented below. 
+1. Reason carefully about the user's messages as presented below.
 
 2. Decide whether any of the your long-term memory should be updated:
 - If personal information was provided about the user, update the user's profile by calling UpdateMemory tool with type `user`
@@ -193,9 +193,9 @@ Here are your instructions for reasoning about the user's messages:
 5. Respond naturally to user user after a tool call was made to save memories, or if no tool call was made."""
 
 # Trustcall instruction
-TRUSTCALL_INSTRUCTION = """Reflect on following interaction. 
+TRUSTCALL_INSTRUCTION = """Reflect on following interaction.
 
-Use the provided tools to retain any necessary memories about the user. 
+Use the provided tools to retain any necessary memories about the user.
 
 Use parallel tool calling to handle updates and insertions simultaneously.
 
