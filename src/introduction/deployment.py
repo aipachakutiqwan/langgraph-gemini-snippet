@@ -3,7 +3,8 @@ from langgraph_sdk import get_client
 from langchain_core.messages import HumanMessage
 
 # This example demonstrates how to use the LangGraph SDK to interact with a LangGraph server.
-# Activate the server by running: langgraph dev 
+# Activate the server by running: langgraph dev
+
 
 async def load_langgraph_sdk():
     # This is the URL of the local development server
@@ -23,5 +24,6 @@ async def load_langgraph_sdk():
         if chunk.data and chunk.event != "metadata":
             print("Received chunk:")
             print(chunk.data["messages"][-1])
+
 
 asyncio.run(load_langgraph_sdk())

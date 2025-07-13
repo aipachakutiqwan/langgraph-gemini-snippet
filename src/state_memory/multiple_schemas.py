@@ -92,6 +92,6 @@ graph.add_edge(START, "thinking_node")
 graph.add_edge("thinking_node", "answer_node")
 graph.add_edge("answer_node", END)
 graph = graph.compile()
-# View
+# View graph
 print(graph.get_graph())
 print(graph.invoke({"question": "hi"}))

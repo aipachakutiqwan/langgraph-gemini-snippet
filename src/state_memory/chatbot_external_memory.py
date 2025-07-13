@@ -1,28 +1,18 @@
 import sqlite3
 from langgraph.checkpoint.sqlite import SqliteSaver
-from langgraph.graph import END
-from langgraph.graph import StateGraph, START
-from langgraph.graph import MessagesState
+from langgraph.graph import START, END
+from langgraph.graph import StateGraph, MessagesState
 from langchain_core.messages import SystemMessage, HumanMessage, RemoveMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 
+from src.model import llm
 
-# SQL-LITE
-# In memory
+# SQL-LITE in memory
 conn = sqlite3.connect(":memory:", check_same_thread=False)
-db_path = "state_db/example.db"
+db_path = "src/state_memory/state_db/example.db"
 conn = sqlite3.connect(db_path, check_same_thread=False)
 
 # Here is our checkpointer
 memory = SqliteSaver(conn)
-
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
 
 
 class State(MessagesState):
@@ -41,7 +31,7 @@ def call_model(state: State):
         messages = [SystemMessage(content=system_message)] + state["messages"]
     else:
         messages = state["messages"]
-    response = model.invoke(messages)
+    response = llm.invoke(messages)
     return {"messages": response}
 
 
@@ -59,7 +49,7 @@ def summarize_conversation(state: State):
         summary_message = "Create a summary of the conversation above:"
     # Add prompt to our history
     messages = state["messages"] + [HumanMessage(content=summary_message)]
-    response = model.invoke(messages)
+    response = llm.invoke(messages)
     # Delete all but the 2 most recent messages
     delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-2]]
     return {"summary": response.content, "messages": delete_messages}
@@ -84,7 +74,7 @@ workflow.add_node(summarize_conversation)
 workflow.add_edge(START, "conversation")
 workflow.add_conditional_edges("conversation", should_continue)
 workflow.add_edge("summarize_conversation", END)
-# Compile
+# Compile graph
 graph = workflow.compile(checkpointer=memory)
 print(graph.get_graph())
 
@@ -104,11 +94,9 @@ output = graph.invoke({"messages": [input_message]}, config)
 for m in output["messages"][-1:]:
     m.pretty_print()
 
-
 config = {"configurable": {"thread_id": "1"}}
 graph_state = graph.get_state(config)
 print(f"graph_state: {graph_state}")
-
 
 # It is possible to read the state of the graph
 config = {"configurable": {"thread_id": "1"}}

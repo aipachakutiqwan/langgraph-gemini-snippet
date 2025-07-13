@@ -6,6 +6,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.model import llm
 
+
 def multiply(a: int, b: int) -> int:
     """Multiply a and b.
 
@@ -46,9 +47,11 @@ sys_msg = SystemMessage(
     content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
 )
 
+
 # Node
 def assistant(state: MessagesState):
     return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
+
 
 # Graph
 builder = StateGraph(MessagesState)

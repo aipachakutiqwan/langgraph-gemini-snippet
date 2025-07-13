@@ -26,6 +26,7 @@ print(f"type(result): {type(result)}")
 print(f"result: {result}")
 print(f"result.response_metadata: {result.response_metadata}")
 
+
 def multiply(a: int, b: int) -> int:
     """Multiply a and b.
 
@@ -35,14 +36,17 @@ def multiply(a: int, b: int) -> int:
     """
     return a * b
 
+
 llm_with_tools = llm.bind_tools([multiply])
 tool_call = llm_with_tools.invoke(
     [HumanMessage(content="What is 2 multiplied by 3", name="Florentino")]
 )
 print("tool_call.tool_calls: ", tool_call.tool_calls)
 
+
 class MessagesState(MessagesState):
     pass
+
 
 # Example adding messages to the state
 initial_messages = [
@@ -59,9 +63,11 @@ new_message = AIMessage(
 # Add the new message to the initial messages
 add_messages(initial_messages, new_message)
 
+
 # Node
 def tool_calling_llm(state: MessagesState):
     return {"messages": [llm_with_tools.invoke(state["messages"])]}
+
 
 # Build graph
 builder = StateGraph(MessagesState)

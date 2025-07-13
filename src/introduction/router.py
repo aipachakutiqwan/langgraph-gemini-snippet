@@ -19,9 +19,11 @@ def multiply(a: int, b: int) -> int:
 llm_with_tools = llm.bind_tools([multiply])
 print(f"llm_with_tools: {llm_with_tools}")
 
+
 # Node
 def tool_calling_llm(state: MessagesState):
     return {"messages": [llm_with_tools.invoke(state["messages"])]}
+
 
 # Build graph
 builder = StateGraph(MessagesState)

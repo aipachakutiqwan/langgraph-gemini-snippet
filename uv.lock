@@ -1140,7 +1140,7 @@ inmem = [
 
 [[package]]
 name = "langgraph-gemini-snippet"
-version = "0.10.6"
+version = "0.11.0"
 source = { editable = "." }
 dependencies = [
     { name = "langchain-community" },
