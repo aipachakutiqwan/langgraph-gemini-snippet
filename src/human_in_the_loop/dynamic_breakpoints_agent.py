@@ -1,4 +1,5 @@
 from typing_extensions import TypedDict
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.errors import NodeInterrupt
 from langgraph.graph import START, END, StateGraph
 
@@ -18,7 +19,6 @@ def step_2(state: State) -> State:
         raise NodeInterrupt(
             f"Received input that is longer than 5 characters: {state['input']}"
         )
-
     print("---Step 2---")
     return state
 
@@ -36,5 +36,9 @@ builder.add_edge(START, "step_1")
 builder.add_edge("step_1", "step_2")
 builder.add_edge("step_2", "step_3")
 builder.add_edge("step_3", END)
-
+# Set up memory
+memory = MemorySaver()
+# Compile the graph with memory
 graph = builder.compile()
+# View
+print(graph.get_graph())
