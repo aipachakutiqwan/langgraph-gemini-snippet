@@ -1,9 +1,7 @@
-import asyncio
 from typing_extensions import TypedDict
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.errors import NodeInterrupt
 from langgraph.graph import START, END, StateGraph
-from langgraph_sdk import get_client
 
 
 class State(TypedDict):
@@ -44,7 +42,6 @@ memory = MemorySaver()
 graph = builder.compile(checkpointer=memory)
 # View
 print(graph.get_graph())
-
 initial_input = {"input": "hello world"}
 thread_config = {"configurable": {"thread_id": "1"}}
 # Run the graph until the first interruption
@@ -63,43 +60,3 @@ graph.update_state(
 )
 for event in graph.stream(None, thread_config, stream_mode="values"):
     print(event)
-
-# USE LANGGRAPH API
-
-# This is the URL of the local development server
-
-
-async def breakpoints():
-    URL = "http://127.0.0.1:2024"
-    client = get_client(url=URL)
-    # Search all hosted graphs
-    assistants = await client.assistants.search()
-    thread = await client.threads.create()
-    input_dict = {"input": "hello world"}
-    async for chunk in client.runs.stream(
-        thread["thread_id"],
-        assistant_id="dynamic_breakpoints",
-        input=input_dict,
-        stream_mode="values",
-    ):
-        print(f"Receiving new event of type: {chunk.event}")
-        print(chunk.data)
-        print("\n\n")
-
-    current_state = await client.threads.get_state(thread["thread_id"])
-    current_state["next"]
-    await client.threads.update_state(thread["thread_id"], {"input": "hi!"})
-    async for chunk in client.runs.stream(
-        thread["thread_id"],
-        assistant_id="dynamic_breakpoints",
-        input=None,
-        stream_mode="values",
-    ):
-        print(f"Receiving new event of type: {chunk.event}")
-        print(chunk.data)
-        print("\n\n")
-    current_state = await client.threads.get_state(thread["thread_id"])
-    print(current_state)
-
-
-asyncio.run(breakpoints())
