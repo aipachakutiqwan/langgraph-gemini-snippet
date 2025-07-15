@@ -1,29 +1,26 @@
 import json
 import uuid
+
 from langgraph.store.memory import InMemoryStore
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.store.base import BaseStore
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables.config import RunnableConfig
 
-# LANGGRAPH STORE
+from src.model import llm
 
+# LANGGRAPH STORE
 in_memory_store = InMemoryStore()
 # Namespace for the memory to save
 user_id = "1"
 namespace_for_memory = (user_id, "memories")
-
 # Save a memory to namespace as key and value
 key = str(uuid.uuid4())
-
 # The value needs to be a dictionary
 value = {"food_preference": "I like pizza"}
-
 # Save the memory
 in_memory_store.put(namespace_for_memory, key, value)
-
 # Search
 memories = in_memory_store.search(namespace_for_memory)
 type(memories)
@@ -35,15 +32,6 @@ print(memories[0].key, memories[0].value)
 memory = in_memory_store.get(namespace_for_memory, key)
 print(memory.dict())
 
-# CHAT WITH LONGTERM MEMORY
-
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
 # Chatbot instruction
 MODEL_SYSTEM_MESSAGE = """You are a helpful assistant with memory that provides information about the user.
 If you have memory for this user, use it to personalize your responses.
@@ -84,7 +72,7 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     # Format the memory in the system prompt
     system_msg = MODEL_SYSTEM_MESSAGE.format(memory=existing_memory_content)
     # Respond using memory as well as the chat history
-    response = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
+    response = llm.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
 
 
@@ -102,7 +90,7 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
         existing_memory_content = "No existing memory found."
     # Format the memory in the system prompt
     system_msg = CREATE_MEMORY_INSTRUCTION.format(memory=existing_memory_content)
-    new_memory = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
+    new_memory = llm.invoke([SystemMessage(content=system_msg)] + state["messages"])
     # Overwrite the existing memory in the store
     key = "user_memory"
     # Write value as a dictionary with a memory key
@@ -124,7 +112,6 @@ within_thread_memory = MemorySaver()
 graph = builder.compile(checkpointer=within_thread_memory, store=across_thread_memory)
 # View
 print(json.dumps(graph.get_graph(xray=1).to_json(), indent=4))
-
 # We supply a thread ID for short-term (within-thread) memory
 # We supply a user ID for long-term (across-thread) memory
 config = {"configurable": {"thread_id": "1", "user_id": "1"}}
@@ -138,7 +125,6 @@ input_messages = [HumanMessage(content="I like to bike around Aarhus")]
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
-
 thread = {"configurable": {"thread_id": "1"}}
 state = graph.get_state(thread).values
 for m in state["messages"]:
@@ -148,7 +134,6 @@ user_id = "1"
 namespace = ("memory", user_id)
 existing_memory = across_thread_memory.get(namespace, "user_memory")
 print(existing_memory.dict())
-
 # We supply a user ID for across-thread memory as well as a new thread ID
 config = {"configurable": {"thread_id": "2", "user_id": "1"}}
 # User input
@@ -158,7 +143,6 @@ input_messages = [
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
-
 # User input
 input_messages = [
     HumanMessage(

@@ -1,7 +1,7 @@
 import uuid
-from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
-from langchain_google_genai import ChatGoogleGenerativeAI
+
+from langchain_core.messages import HumanMessage
 from langgraph.store.memory import InMemoryStore
 from trustcall import create_extractor
 from langchain_core.messages import SystemMessage, AIMessage
@@ -11,34 +11,25 @@ from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.store.base import BaseStore
 
+from src.model import llm
 
 class Memory(BaseModel):
     content: str = Field(
         description="The main content of the memory. For example: User expressed interest in learning about French."
     )
 
-
 class MemoryCollection(BaseModel):
     memories: list[Memory] = Field(description="A list of memories about the user.")
 
 
-# Initialize the model
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
 # Bind schema to model
-model_with_structure = model.with_structured_output(MemoryCollection)
+model_with_structure = llm.with_structured_output(MemoryCollection)
 # Invoke the model to produce structured output that matches the schema
 memory_collection = model_with_structure.invoke(
     [HumanMessage("My name is Lance. I like to bike.")]
 )
 print(memory_collection.memories)
 print(memory_collection.memories[0].model_dump())
-
 # Initialize the in-memory store
 in_memory_store = InMemoryStore()
 # Namespace for the memory to save
@@ -56,15 +47,13 @@ for m in in_memory_store.search(namespace_for_memory):
     print(m.dict())
 
 # UPDATING COLLECTION SCHEMA
-
 # Create the extractor
 trustcall_extractor = create_extractor(
-    model,
+    llm,
     tools=[Memory],
     tool_choice="Memory",
     enable_inserts=True,
 )
-
 # Instruction
 instruction = """Extract memories from the following conversation:"""
 # Conversation
@@ -93,7 +82,6 @@ updated_conversation = [
     AIMessage(content="What else is on your mind?"),
     HumanMessage(content="I was thinking about my Japan, and going back this winter!"),
 ]
-
 # Update the instruction
 system_msg = """Update existing memories and create new ones based on the following conversation:"""
 # We'll save existing memories, giving them an ID, key (tool name), and value
@@ -122,24 +110,19 @@ for m in result["response_metadata"]:
     print(m)
 
 # CHATBOT WITH COLLECTION SCHEMA UPDATING
-
-
 # Memory schema
 class Memory(BaseModel):
     content: str = Field(
         description="The main content of the memory. For example: User expressed interest in learning about French."
     )
-
-
 # Create the Trustcall extractor
 trustcall_extractor = create_extractor(
-    model,
+    llm,
     tools=[Memory],
     tool_choice="Memory",
     # This allows the extractor to insert new memories
     enable_inserts=True,
 )
-
 # Chatbot instruction
 MODEL_SYSTEM_MESSAGE = """You are a helpful chatbot. You are designed to be a companion to a user.
 You have a long term memory which keeps track of information you learn about the user over time.
@@ -150,7 +133,6 @@ Current Memory (may include updated memories from this conversation):
 TRUSTCALL_INSTRUCTION = """Reflect on following interaction.
 Use the provided tools to retain any necessary memories about the user.
 Use parallel tool calling to handle updates and insertions simultaneously:"""
-
 
 def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memories from the store and use them to personalize the chatbot's response."""
@@ -163,9 +145,8 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     info = "\n".join(f"- {mem.value['content']}" for mem in memories)
     system_msg = MODEL_SYSTEM_MESSAGE.format(memory=info)
     # Respond using memory as well as the chat history
-    response = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
+    response = llm.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
-
 
 def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and update the memory collection."""
@@ -252,3 +233,4 @@ input_messages = [HumanMessage(content="What bakeries do you recommend for me?")
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
+
