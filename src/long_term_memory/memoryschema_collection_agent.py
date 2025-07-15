@@ -1,25 +1,15 @@
 import uuid
 
 from pydantic import BaseModel, Field
-
 from trustcall import create_extractor
-
 from langchain_core.messages import SystemMessage
 from langchain_core.messages import merge_message_runs
 from langchain_core.runnables.config import RunnableConfig
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.store.base import BaseStore
-import configuration
 
-# Initialize the LLM
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
+from src.model import llm
+from src.long_term_memory.configuration import Configuration
 
 
 # Memory schema
@@ -31,7 +21,7 @@ class Memory(BaseModel):
 
 # Create the Trustcall extractor
 trustcall_extractor = create_extractor(
-    model,
+    llm,
     tools=[Memory],
     tool_choice="Memory",
     # This allows the extractor to insert new memories
@@ -59,22 +49,17 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memory from the store and use it to personalize the chatbot's response."""
 
     # Get configuration
-    configurable = configuration.Configuration.from_runnable_config(config)
-
+    configurable = Configuration.from_runnable_config(config)
     # Get the user ID from the config
     user_id = configurable.user_id
-
     # Retrieve memory from the store
     namespace = ("memories", user_id)
     memories = store.search(namespace)
-
     # Format the memories for the system prompt
     info = "\n".join(f"- {mem.value['content']}" for mem in memories)
     system_msg = MODEL_SYSTEM_MESSAGE.format(memory=info)
-
     # Respond using memory as well as the chat history
-    response = model.invoke([SystemMessage(content=system_msg)] + state["messages"])
-
+    response = llm.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
 
 
@@ -82,17 +67,13 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
     """Reflect on the chat history and save a memory to the store."""
 
     # Get configuration
-    configurable = configuration.Configuration.from_runnable_config(config)
-
+    configurable = Configuration.from_runnable_config(config)
     # Get the user ID from the config
     user_id = configurable.user_id
-
     # Define the namespace for the memories
     namespace = ("memories", user_id)
-
     # Retrieve the most recent memories for context
     existing_items = store.search(namespace)
-
     # Format the existing memories for the Trustcall extractor
     tool_name = "Memory"
     existing_memories = (
@@ -115,7 +96,6 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
     result = trustcall_extractor.invoke(
         {"messages": updated_messages, "existing": existing_memories}
     )
-
     # Save the memories from Trustcall to the store
     for r, rmeta in zip(result["responses"], result["response_metadata"]):
         store.put(
@@ -126,7 +106,7 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
 
 
 # Define the graph
-builder = StateGraph(MessagesState, config_schema=configuration.Configuration)
+builder = StateGraph(MessagesState, config_schema=Configuration)
 builder.add_node("call_model", call_model)
 builder.add_node("write_memory", write_memory)
 builder.add_edge(START, "call_model")
