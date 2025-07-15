@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "dockerfile_lines": [],
+  "env": "../../.env",
+  "graphs": {
+    "map_reduce": "./map_reduce.py:graph",
+    "parallelization": "./parallelization_agent.py:graph",
+    "research_assistant": "./research_assistant_agent.py:graph",
+    "sub_graphs": "./sub_graphs.py:graph"
+
+
+  },
+  "python_version": "3.12"
+}

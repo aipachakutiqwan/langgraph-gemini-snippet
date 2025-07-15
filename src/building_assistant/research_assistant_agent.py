@@ -1,8 +1,8 @@
 import operator
-from pydantic import BaseModel, Field
 from typing import Annotated, List
 from typing_extensions import TypedDict
 
+from pydantic import BaseModel, Field
 from langchain_community.document_loaders import WikipediaLoader
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.messages import (
@@ -11,18 +11,12 @@ from langchain_core.messages import (
     SystemMessage,
     get_buffer_string,
 )
-from langchain_openai import ChatOpenAI
-
 from langgraph.constants import Send
 from langgraph.graph import END, MessagesState, START, StateGraph
 
-### LLM
-
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+from src.model import llm
 
 ### Schema
-
-
 class Analyst(BaseModel):
     affiliation: str = Field(
         description="Primary affiliation of the analyst.",
@@ -101,23 +95,19 @@ def create_analysts(state: GenerateAnalystsState):
     topic = state["topic"]
     max_analysts = state["max_analysts"]
     human_analyst_feedback = state.get("human_analyst_feedback", "")
-
     # Enforce structured output
     structured_llm = llm.with_structured_output(Perspectives)
-
     # System message
     system_message = analyst_instructions.format(
         topic=topic,
         human_analyst_feedback=human_analyst_feedback,
         max_analysts=max_analysts,
     )
-
     # Generate question
     analysts = structured_llm.invoke(
         [SystemMessage(content=system_message)]
         + [HumanMessage(content="Generate the set of analysts.")]
     )
-
     # Write the list of analysis to state
     return {"analysts": analysts.analysts}
 
@@ -149,15 +139,12 @@ Remember to stay in character throughout your response, reflecting the persona a
 
 def generate_question(state: InterviewState):
     """Node to generate a question"""
-
     # Get state
     analyst = state["analyst"]
     messages = state["messages"]
-
     # Generate question
     system_message = question_instructions.format(goals=analyst.persona)
     question = llm.invoke([SystemMessage(content=system_message)] + messages)
-
     # Write messages to state
     return {"messages": [question]}
 
@@ -178,17 +165,13 @@ Convert this final question into a well-structured web search query"""
 
 def search_web(state: InterviewState):
     """Retrieve docs from web search"""
-
     # Search
     tavily_search = TavilySearchResults(max_results=3)
-
     # Search query
     structured_llm = llm.with_structured_output(SearchQuery)
     search_query = structured_llm.invoke([search_instructions] + state["messages"])
-
     # Search
     search_docs = tavily_search.invoke(search_query.search_query)
-
     # Format
     formatted_search_docs = "\n\n---\n\n".join(
         [
@@ -196,7 +179,6 @@ def search_web(state: InterviewState):
             for doc in search_docs
         ]
     )
-
     return {"context": [formatted_search_docs]}
 
 
@@ -206,12 +188,10 @@ def search_wikipedia(state: InterviewState):
     # Search query
     structured_llm = llm.with_structured_output(SearchQuery)
     search_query = structured_llm.invoke([search_instructions] + state["messages"])
-
     # Search
     search_docs = WikipediaLoader(
         query=search_query.search_query, load_max_docs=2
     ).load()
-
     # Format
     formatted_search_docs = "\n\n---\n\n".join(
         [
@@ -219,7 +199,6 @@ def search_wikipedia(state: InterviewState):
             for doc in search_docs
         ]
     )
-
     return {"context": [formatted_search_docs]}
 
 
@@ -260,51 +239,40 @@ def generate_answer(state: InterviewState):
     analyst = state["analyst"]
     messages = state["messages"]
     context = state["context"]
-
     # Answer question
     system_message = answer_instructions.format(goals=analyst.persona, context=context)
     answer = llm.invoke([SystemMessage(content=system_message)] + messages)
-
     # Name the message as coming from the expert
     answer.name = "expert"
-
     # Append it to state
     return {"messages": [answer]}
 
 
 def save_interview(state: InterviewState):
     """Save interviews"""
-
     # Get messages
     messages = state["messages"]
-
     # Convert interview to a string
     interview = get_buffer_string(messages)
-
     # Save to interviews key
     return {"interview": interview}
 
 
 def route_messages(state: InterviewState, name: str = "expert"):
     """Route between question and answer"""
-
     # Get messages
     messages = state["messages"]
     max_num_turns = state.get("max_num_turns", 2)
-
     # Check the number of expert answers
     num_responses = len(
         [m for m in messages if isinstance(m, AIMessage) and m.name == name]
     )
-
     # End if expert has answered more than the max turns
     if num_responses >= max_num_turns:
         return "save_interview"
-
     # This router is run after each question - answer pair
     # Get the last question asked to check if it signals the end of discussion
     last_question = messages[-2]
-
     if "Thank you so much for your help" in last_question.content:
         return "save_interview"
     return "ask_question"
@@ -369,14 +337,12 @@ def write_section(state: InterviewState):
     # Get state
     context = state["context"]
     analyst = state["analyst"]
-
     # Write section using either the gathered source docs from interview (context) or the interview itself (interview)
     system_message = section_writer_instructions.format(focus=analyst.description)
     section = llm.invoke(
         [SystemMessage(content=system_message)]
         + [HumanMessage(content=f"Use this source to write your section: {context}")]
     )
-
     # Append it to state
     return {"sections": [section.content]}
 
@@ -389,7 +355,6 @@ interview_builder.add_node("search_wikipedia", search_wikipedia)
 interview_builder.add_node("answer_question", generate_answer)
 interview_builder.add_node("save_interview", save_interview)
 interview_builder.add_node("write_section", write_section)
-
 # Flow
 interview_builder.add_edge(START, "ask_question")
 interview_builder.add_edge("ask_question", "search_web")
@@ -405,13 +370,11 @@ interview_builder.add_edge("write_section", END)
 
 def initiate_all_interviews(state: ResearchGraphState):
     """Conditional edge to initiate all interviews via Send() API or return to create_analysts"""
-
     # Check if human feedback
     human_analyst_feedback = state.get("human_analyst_feedback", "approve")
     if human_analyst_feedback.lower() != "approve":
         # Return to create_analysts
         return "create_analysts"
-
     # Otherwise kick off interviews in parallel via Send() API
     else:
         topic = state["topic"]
@@ -469,14 +432,11 @@ Here are the memos from your analysts to build your report from:
 
 def write_report(state: ResearchGraphState):
     """Node to write the final report body"""
-
     # Full set of sections
     sections = state["sections"]
     topic = state["topic"]
-
     # Concat all sections together
     formatted_str_sections = "\n\n".join([f"{section}" for section in sections])
-
     # Summarize the sections into a final report
     system_message = report_writer_instructions.format(
         topic=topic, context=formatted_str_sections
@@ -514,16 +474,12 @@ Here are the sections to reflect on for writing: {formatted_str_sections}"""
 
 def write_introduction(state: ResearchGraphState):
     """Node to write the introduction"""
-
     # Full set of sections
     sections = state["sections"]
     topic = state["topic"]
-
     # Concat all sections together
     formatted_str_sections = "\n\n".join([f"{section}" for section in sections])
-
     # Summarize the sections into a final report
-
     instructions = intro_conclusion_instructions.format(
         topic=topic, formatted_str_sections=formatted_str_sections
     )
@@ -539,12 +495,9 @@ def write_conclusion(state: ResearchGraphState):
     # Full set of sections
     sections = state["sections"]
     topic = state["topic"]
-
     # Concat all sections together
     formatted_str_sections = "\n\n".join([f"{section}" for section in sections])
-
     # Summarize the sections into a final report
-
     instructions = intro_conclusion_instructions.format(
         topic=topic, formatted_str_sections=formatted_str_sections
     )
@@ -564,7 +517,8 @@ def finalize_report(state: ResearchGraphState):
     if "## Sources" in content:
         try:
             content, sources = content.split("\n## Sources\n")
-        except:
+        except ValueError as ex:
+            print(f"A ValueError occurred: {ex}")
             sources = None
     else:
         sources = None
@@ -604,6 +558,5 @@ builder.add_edge(
     ["write_conclusion", "write_report", "write_introduction"], "finalize_report"
 )
 builder.add_edge("finalize_report", END)
-
 # Compile
 graph = builder.compile(interrupt_before=["human_feedback"])

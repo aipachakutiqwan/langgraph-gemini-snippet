@@ -1,15 +1,15 @@
-import asyncio
+import operator
 from typing import Any
+from typing import Annotated
 from typing_extensions import TypedDict
+
 from langgraph.graph import StateGraph, START, END
 from langgraph.errors import InvalidUpdateError
-import operator
-from typing import Annotated
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.document_loaders import WikipediaLoader
 from langchain_community.tools import TavilySearchResults
-from langgraph_sdk import get_client
+
+from src.model import llm
 
 
 # FAN OUT / FAN IN
@@ -142,15 +142,6 @@ graph = builder.compile()
 print(graph.get_graph())
 print(graph.invoke({"state": []}))
 
-# WORKING WITH LLMs
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
-
 
 class State(TypedDict):
     question: str
@@ -222,24 +213,3 @@ graph = builder.compile()
 print(graph.get_graph())
 result = graph.invoke({"question": "How were Nvidia's Q2 2024 earnings"})
 print(result["answer"].content)
-
-
-# USING LANGGRAPH API
-async def search():
-    print("Running parallelization example with LangGraph API")
-    client = get_client(url="http://127.0.0.1:2024")
-    thread = await client.threads.create()
-    input_question = {"question": "How were Nvidia Q2 2024 earnings?"}
-    async for event in client.runs.stream(
-        thread["thread_id"],
-        assistant_id="parallelization",
-        input=input_question,
-        stream_mode="values",
-    ):
-        # Check if answer has been added to state
-        answer = event.data.get("answer", None)
-        if answer:
-            print(answer["content"])
-
-
-asyncio.run(search())
