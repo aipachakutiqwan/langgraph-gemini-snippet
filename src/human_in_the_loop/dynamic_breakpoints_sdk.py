@@ -1,6 +1,7 @@
 import asyncio
 from langgraph_sdk import get_client
 
+
 # DYNAMIC BREAKPOINTS WITH LANGGRAPH SDK
 # Activate the server by running: langgraph dev
 async def breakpoints():
@@ -33,5 +34,6 @@ async def breakpoints():
         print("\n\n")
     current_state = await client.threads.get_state(thread["thread_id"])
     print(current_state)
-    
+
+
 asyncio.run(breakpoints())

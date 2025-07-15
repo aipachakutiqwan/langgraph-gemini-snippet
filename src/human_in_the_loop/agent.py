@@ -4,6 +4,7 @@ from langgraph.prebuilt import tools_condition, ToolNode
 
 from src.model import llm
 
+
 def add(a: int, b: int) -> int:
     """Adds a and b.
 

@@ -7,6 +7,7 @@ from langchain_core.messages import convert_to_messages
 # STREAMING WITH LANGGRAPH API
 URL = "http://127.0.0.1:2024"
 
+
 # Search all hosted graphs
 async def call_assistants():
     # This is the URL of the local development server
@@ -22,6 +23,8 @@ async def call_assistants():
         stream_mode="values",
     ):
         print("event:", event)
+
+
 asyncio.run(call_assistants())
 
 
@@ -39,6 +42,8 @@ async def call_assistants_streaming():
         if messages:
             print(convert_to_messages(messages)[-1])
         print("=" * 25)
+
+
 asyncio.run(call_assistants_streaming())
 
 
@@ -53,6 +58,8 @@ async def call_assistants_streaming_messages():
         stream_mode="messages",
     ):
         print(event.event)
+
+
 asyncio.run(call_assistants_streaming_messages())
 
 
@@ -60,6 +67,7 @@ async def format_calls():
     client = get_client(url=URL)
     thread = await client.threads.create()
     input_message = HumanMessage(content="Multiply 2 and 3")
+
     def format_tool_calls(tool_calls):
         """
         Format a list of tool calls into a readable string.
@@ -112,4 +120,6 @@ async def format_calls():
                         finish_reason = response_metadata.get("finish_reason", "N/A")
                         print(f"Response Metadata: Finish Reason - {finish_reason}")
             print("-" * 50)
+
+
 asyncio.run(format_calls())

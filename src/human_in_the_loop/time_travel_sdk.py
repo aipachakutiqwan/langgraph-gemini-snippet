@@ -54,7 +54,10 @@ async def replay():
             elif tool_node:
                 print("-" * 20 + "Tools Node" + "-" * 20)
                 print(tool_node[-1])
+
+
 asyncio.run(replay())
+
 
 # FORKING
 async def fork():
@@ -110,4 +113,6 @@ async def fork():
             elif tool_node:
                 print("-" * 20 + "Tools Node" + "-" * 20)
                 print(tool_node[-1])
+
+
 asyncio.run(fork())
