@@ -2,8 +2,8 @@ import json
 from operator import add
 from typing_extensions import TypedDict
 from typing import List, Optional, Annotated
-from langgraph.graph import StateGraph, START, END
 
+from langgraph.graph import StateGraph, START, END
 
 # Architecture: https://cdn.prod.website-files.com/65b8cd72835ceeacd4449a53/66dbb1abf89f2d847ee6f1ff_sub-graph1.png
 
@@ -20,8 +20,6 @@ class Log(TypedDict):
 
 
 # SUBGRAPHS
-
-
 # Failure Analysis Sub-graph
 class FailureAnalysisState(TypedDict):
     cleaned_logs: List[Log]
@@ -89,7 +87,7 @@ def generate_summary(state):
 
 
 def send_to_slack(state):
-    qs_summary = state["qs_summary"]
+    # qs_summary = state["qs_summary"]
     # Add fxn: report = report_generation(qs_summary)
     report = "foo bar baz"
     return {"report": report}
@@ -139,14 +137,12 @@ graph = entry_builder.compile()
 # Setting xray to 1 will show the internal structure of the nested graph
 print(json.dumps(graph.get_graph(xray=1).to_json(), indent=2))
 
-
 # Dummy logs
 question_answer = Log(
     id="1",
     question="How can I import ChatOllama?",
     answer="To import ChatOllama, use: 'from langchain_community.chat_models import ChatOllama.'",
 )
-
 question_answer_feedback = Log(
     id="2",
     question="How can I use Chroma vector store?",
@@ -155,6 +151,5 @@ question_answer_feedback = Log(
     grader="Document Relevance Recall",
     feedback="The retrieved documents discuss vector stores in general, but not Chroma specifically",
 )
-
 raw_logs = [question_answer, question_answer_feedback]
 print(graph.invoke({"raw_logs": raw_logs}))

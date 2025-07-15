@@ -2,9 +2,9 @@ import json
 import operator
 from typing import List, Annotated
 from typing_extensions import TypedDict
-from langgraph.graph import MessagesState
-from langchain_google_genai import ChatGoogleGenerativeAI
+
 from pydantic import BaseModel, Field
+from langgraph.graph import MessagesState
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
@@ -13,18 +13,10 @@ from langchain_community.document_loaders import WikipediaLoader
 from langchain_core.messages import get_buffer_string
 from langgraph.constants import Send
 
-# LLM
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
-    temperature=0,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-)
+from src.model import llm
+
 
 # GENERATE ANALYSTS: HUMAN-IN-THE-LOOP
-
-
 class Analyst(BaseModel):
     affiliation: str = Field(
         description="Primary affiliation of the analyst.",
@@ -116,11 +108,9 @@ memory = MemorySaver()
 graph = builder.compile(interrupt_before=["human_feedback"], checkpointer=memory)
 # View
 print(json.dumps(graph.get_graph(xray=1).to_json(), indent=2))
-
 # Input
 max_analysts = 3
 topic = "The benefits of adopting LangGraph as an agent framework"
-
 thread = {"configurable": {"thread_id": "1"}}
 # Run the graph until the first interruption
 for event in graph.stream(
@@ -183,9 +173,8 @@ for analyst in analysts:
     print(f"Description: {analyst.description}")
     print("-" * 50)
 
+
 # CONDUCT INTERVIEW
-
-
 class InterviewState(MessagesState):
     max_num_turns: int  # Number turns of conversation
     context: Annotated[list, operator.add]  # Source docs
@@ -422,8 +411,6 @@ print(interview["sections"][0])
 
 
 # PARALELLIZE INTERVIEWS: MAP-REDUCE
-
-
 # We add a final step to write an intro and conclusion to the final report.
 class ResearchGraphState(TypedDict):
     topic: str  # Research topic
@@ -559,7 +546,8 @@ def finalize_report(state: ResearchGraphState):
     if "## Sources" in content:
         try:
             content, sources = content.split("\n## Sources\n")
-        except:
+        except ValueError as ex:
+            print(f"A ValueError occurred: {ex}")
             sources = None
     else:
         sources = None
@@ -623,7 +611,6 @@ graph.update_state(
     {"human_analyst_feedback": "Add in the CEO of gen ai native startup"},
     as_node="human_feedback",
 )
-
 # Check
 for event in graph.stream(None, thread, stream_mode="values"):
     analysts = event.get("analysts", "")
