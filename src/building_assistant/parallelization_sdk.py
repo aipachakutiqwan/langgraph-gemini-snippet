@@ -18,5 +18,6 @@ async def search():
         answer = event.data.get("answer", None)
         if answer:
             print(answer["content"])
-            
+
+
 asyncio.run(search())

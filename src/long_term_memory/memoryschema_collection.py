@@ -13,10 +13,12 @@ from langgraph.store.base import BaseStore
 
 from src.model import llm
 
+
 class Memory(BaseModel):
     content: str = Field(
         description="The main content of the memory. For example: User expressed interest in learning about French."
     )
+
 
 class MemoryCollection(BaseModel):
     memories: list[Memory] = Field(description="A list of memories about the user.")
@@ -109,12 +111,15 @@ for m in result["responses"]:
 for m in result["response_metadata"]:
     print(m)
 
+
 # CHATBOT WITH COLLECTION SCHEMA UPDATING
 # Memory schema
 class Memory(BaseModel):
     content: str = Field(
         description="The main content of the memory. For example: User expressed interest in learning about French."
     )
+
+
 # Create the Trustcall extractor
 trustcall_extractor = create_extractor(
     llm,
@@ -134,6 +139,7 @@ TRUSTCALL_INSTRUCTION = """Reflect on following interaction.
 Use the provided tools to retain any necessary memories about the user.
 Use parallel tool calling to handle updates and insertions simultaneously:"""
 
+
 def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memories from the store and use them to personalize the chatbot's response."""
     # Get the user ID from the config
@@ -147,6 +153,7 @@ def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     # Respond using memory as well as the chat history
     response = llm.invoke([SystemMessage(content=system_msg)] + state["messages"])
     return {"messages": response}
+
 
 def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and update the memory collection."""
@@ -233,4 +240,3 @@ input_messages = [HumanMessage(content="What bakeries do you recommend for me?")
 # Run the graph
 for chunk in graph.stream({"messages": input_messages}, config, stream_mode="values"):
     chunk["messages"][-1].pretty_print()
-

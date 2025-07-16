@@ -1,4 +1,5 @@
 import asyncio
+
 import httpx
 from langchain_core.messages import HumanMessage
 from langgraph_sdk import get_client
@@ -37,14 +38,12 @@ async def double_texting():
         )
     except httpx.HTTPStatusError as e:
         print("Failed to start concurrent run", e)
-
     # Wait until the original run completes
     await client.runs.join(thread["thread_id"], run["run_id"])
     # Get the state of the thread
     state = await client.threads.get_state(thread["thread_id"])
     for m in convert_to_messages(state["values"]["messages"]):
         m.pretty_print()
-
     # ENQUEUE
     # Create a new thread
     thread = await client.threads.create()
@@ -53,7 +52,7 @@ async def double_texting():
     user_input_2 = "Get cash and pay nanny for 2 weeks. Do this by Friday."
     config = {"configurable": {"user_id": "Test-Double-Texting"}}
     graph_name = "task_maistro"
-    first_run = await client.runs.create(
+    await client.runs.create(
         thread["thread_id"],
         graph_name,
         input={"messages": [HumanMessage(content=user_input_1)]},
@@ -111,7 +110,6 @@ async def double_texting():
             "status"
         ]
     )
-
     # ROLLBACK
     # Create a new thread
     thread = await client.threads.create()

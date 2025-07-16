@@ -13,6 +13,7 @@ from langgraph.store.base import BaseStore
 from src.model import llm
 from src.long_term_memory.configuration import Configuration
 
+
 ## Utilities
 # Inspect the tool calls for Trustcall
 class Spy:
@@ -75,6 +76,7 @@ def extract_tool_info(tool_calls, schema_name="Memory"):
 # User profile schema
 class Profile(BaseModel):
     """This is the profile of the user you are chatting with"""
+
     name: Optional[str] = Field(description="The user's name", default=None)
     location: Optional[str] = Field(description="The user's location", default=None)
     job: Optional[str] = Field(description="The user's job", default=None)
@@ -85,6 +87,7 @@ class Profile(BaseModel):
     interests: list[str] = Field(
         description="Interests that the user has", default_factory=list
     )
+
 
 # ToDo schema
 class ToDo(BaseModel):
@@ -110,7 +113,9 @@ class ToDo(BaseModel):
 # Update memory tool
 class UpdateMemory(TypedDict):
     """Decision on what memory type to update"""
+
     update_type: Literal["user", "todo", "instructions"]
+
 
 ## Create the Trustcall extractors for updating the user profile and ToDo list
 profile_extractor = create_extractor(
@@ -182,6 +187,7 @@ Your current instructions are:
 <current_instructions>
 {current_instructions}
 </current_instructions>"""
+
 
 ## Node definitions
 def task_mAIstro(state: MessagesState, config: RunnableConfig, store: BaseStore):

@@ -16,6 +16,7 @@ from langgraph.graph import END, MessagesState, START, StateGraph
 
 from src.model import llm
 
+
 ### Schema
 class Analyst(BaseModel):
     affiliation: str = Field(
@@ -151,7 +152,7 @@ def generate_question(state: InterviewState):
 
 # Search query writing
 search_instructions = SystemMessage(
-    content=f"""You will be given a conversation between an analyst and an expert.
+    content="""You will be given a conversation between an analyst and an expert.
 
 Your goal is to generate a well-structured query for use in retrieval and / or web-search related to the conversation.
 

@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, START, END
 
 from src.model import llm
 
+
 class State(TypedDict):
     question: str
     answer: str

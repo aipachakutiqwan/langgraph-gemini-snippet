@@ -9,9 +9,11 @@ from langgraph.store.base import BaseStore
 from src.model import llm
 from src.long_term_memory.configuration import Configuration
 
+
 # Schema
 class UserProfile(BaseModel):
     """Profile of a user"""
+
     user_name: str = Field(description="The user's preferred name")
     user_location: str = Field(description="The user's location")
     interests: list = Field(description="A list of the user's interests")
