@@ -45,10 +45,7 @@ version_scheme = "pep440"
 version_provider = "pep621"
 update_changelog_on_bump = true
 major_version_zero = true
-version_files = ["pyproject.toml:(?i)version",
-                 "devops/configuration-release-dev.yaml:(?i)_IMAGE_VERSION",
-                 "devops/configuration-release-test.yaml:(?i)_IMAGE_VERSION",
-                 "devops/configuration-release-prod.yaml:(?i)_IMAGE_VERSION"
+version_files = ["pyproject.toml:(?i)version"
                 ]
 bump_message = "chore(bump): $current_version → $new_version [skip-ci]"
 
