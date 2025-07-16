@@ -1,0 +1,6 @@
+
+Steps to create task_maistro deployment:
+
+1. Run the command: langgraph build -t task_maistro
+2. Set GOOGLE_API_KEY and LANGSMITH_API_KEY in docker-compose.yml.
+3. Run deployment: docker-compose up

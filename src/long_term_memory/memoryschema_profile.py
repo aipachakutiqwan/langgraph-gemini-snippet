@@ -15,8 +15,10 @@ from langchain_core.runnables.config import RunnableConfig
 
 from src.model import llm
 
+
 class UserProfile(TypedDict):
     """User profile schema with typed fields"""
+
     user_name: str  # The user's preferred name
     interests: List[str]  # A list of the user's interests
 
@@ -60,6 +62,7 @@ Here is the memory (it may be empty): {memory}"""
 CREATE_MEMORY_INSTRUCTION = """Create or update a user profile memory based on the user's chat history.
 This will be saved for long-term memory. If there is an existing memory, simply update it.
 Here is the existing memory (it may be empty): {memory}"""
+
 
 def call_model(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Load memory from the store and use it to personalize the chatbot's response."""
@@ -219,6 +222,8 @@ conversation = [
     AIMessage(content="Nice to meet you, Lance."),
     HumanMessage(content="I really like biking around San Francisco."),
 ]
+
+
 # Schema
 class UserProfile(BaseModel):
     """User profile schema with typed fields"""
@@ -290,6 +295,7 @@ result = bound.invoke(
 )
 # Extract the preferences
 print(result["responses"][0])
+
 
 # CHATBOT WITH PROFILE SCHEMA UPDATING
 # Schema
@@ -364,6 +370,7 @@ def write_memory(state: MessagesState, config: RunnableConfig, store: BaseStore)
     # Save the updated profile
     key = "user_memory"
     store.put(namespace, key, updated_profile)
+
 
 # Define the graph
 builder = StateGraph(MessagesState)

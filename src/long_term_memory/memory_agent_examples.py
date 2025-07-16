@@ -15,11 +15,13 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 from src.model import llm
 
+
 # VISIBILITY INTO TRUSTCALL UPDATES
 class Memory(BaseModel):
     content: str = Field(
         description="The main content of the memory. For example: User expressed interest in learning about French."
     )
+
 
 class MemoryCollection(BaseModel):
     memories: list[Memory] = Field(description="A list of memories about the user.")
@@ -160,9 +162,11 @@ print(changes)
 # (b) Add or update items in a ToDo list `collection`
 # (c) Update its own `instructions` on how to update items to the ToDo list
 
+
 # Update memory tool
 class UpdateMemory(TypedDict):
     """Decision on what memory type to update"""
+
     update_type: Literal["user", "todo", "instructions"]
 
 
@@ -398,6 +402,7 @@ def update_todos(state: MessagesState, config: RunnableConfig, store: BaseStore)
             }
         ]
     }
+
 
 def update_instructions(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and update the memory collection."""

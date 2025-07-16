@@ -1,25 +1,20 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, Field
-
-from trustcall import create_extractor
-
 from typing import Literal, Optional, TypedDict
 
+from pydantic import BaseModel, Field
+from trustcall import create_extractor
 from langchain_core.runnables import RunnableConfig
 from langchain_core.messages import merge_message_runs
 from langchain_core.messages import SystemMessage, HumanMessage
-
 from langchain_google_genai import ChatGoogleGenerativeAI
-
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.store.base import BaseStore
 
 import configuration
 
+
 ## Utilities
-
-
 # Inspect the tool calls for Trustcall
 class Spy:
     def __init__(self):
@@ -47,7 +42,6 @@ def extract_tool_info(tool_calls, schema_name="Memory"):
     """
     # Initialize list of changes
     changes = []
-
     for call_group in tool_calls:
         for call in call_group:
             if call["name"] == "PatchDoc":
@@ -72,7 +66,6 @@ def extract_tool_info(tool_calls, schema_name="Memory"):
                     )
             elif call["name"] == schema_name:
                 changes.append({"type": "new", "value": call["args"]})
-
     # Format results as a single string
     result_parts = []
     for change in changes:
@@ -90,13 +83,10 @@ def extract_tool_info(tool_calls, schema_name="Memory"):
             result_parts.append(
                 f"New {schema_name} created:\nContent: {change['value']}"
             )
-
     return "\n\n".join(result_parts)
 
 
 ## Schema definitions
-
-
 # User profile schema
 class Profile(BaseModel):
     """This is the profile of the user you are chatting with"""
@@ -134,8 +124,6 @@ class ToDo(BaseModel):
 
 
 ## Initialize the model and tools
-
-
 # Update memory tool
 class UpdateMemory(TypedDict):
     """Decision on what memory type to update"""
@@ -159,7 +147,6 @@ profile_extractor = create_extractor(
 )
 
 ## Prompts
-
 # Chatbot instruction for choosing what to update and what tools to call
 MODEL_SYSTEM_MESSAGE = """{task_maistro_role}
 
@@ -232,7 +219,6 @@ def task_mAIstro(state: MessagesState, config: RunnableConfig, store: BaseStore)
     user_id = configurable.user_id
     todo_category = configurable.todo_category
     task_maistro_role = configurable.task_maistro_role
-
     # Retrieve profile memory from the store
     namespace = ("profile", todo_category, user_id)
     memories = store.search(namespace)
@@ -240,12 +226,10 @@ def task_mAIstro(state: MessagesState, config: RunnableConfig, store: BaseStore)
         user_profile = memories[0].value
     else:
         user_profile = None
-
     # Retrieve people memory from the store
     namespace = ("todo", todo_category, user_id)
     memories = store.search(namespace)
     todo = "\n".join(f"{mem.value}" for mem in memories)
-
     # Retrieve custom instructions
     namespace = ("instructions", todo_category, user_id)
     memories = store.search(namespace)
@@ -253,36 +237,29 @@ def task_mAIstro(state: MessagesState, config: RunnableConfig, store: BaseStore)
         instructions = memories[0].value
     else:
         instructions = ""
-
     system_msg = MODEL_SYSTEM_MESSAGE.format(
         task_maistro_role=task_maistro_role,
         user_profile=user_profile,
         todo=todo,
         instructions=instructions,
     )
-
     # Respond using memory as well as the chat history
     response = model.bind_tools([UpdateMemory]).invoke(
         [SystemMessage(content=system_msg)] + state["messages"]
     )
-
     return {"messages": [response]}
 
 
 def update_profile(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and update the memory collection."""
-
     # Get the user ID from the config
     configurable = configuration.Configuration.from_runnable_config(config)
     user_id = configurable.user_id
     todo_category = configurable.todo_category
-
     # Define the namespace for the memories
     namespace = ("profile", todo_category, user_id)
-
     # Retrieve the most recent memories for context
     existing_items = store.search(namespace)
-
     # Format the existing memories for the Trustcall extractor
     tool_name = "Profile"
     existing_memories = (
@@ -293,7 +270,6 @@ def update_profile(state: MessagesState, config: RunnableConfig, store: BaseStor
         if existing_items
         else None
     )
-
     # Merge the chat history and the instruction
     TRUSTCALL_INSTRUCTION_FORMATTED = TRUSTCALL_INSTRUCTION.format(
         time=datetime.now().isoformat()
@@ -304,12 +280,10 @@ def update_profile(state: MessagesState, config: RunnableConfig, store: BaseStor
             + state["messages"][:-1]
         )
     )
-
     # Invoke the extractor
     result = profile_extractor.invoke(
         {"messages": updated_messages, "existing": existing_memories}
     )
-
     # Save save the memories from Trustcall to the store
     for r, rmeta in zip(result["responses"], result["response_metadata"]):
         store.put(
@@ -332,18 +306,14 @@ def update_profile(state: MessagesState, config: RunnableConfig, store: BaseStor
 
 def update_todos(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and update the memory collection."""
-
     # Get the user ID from the config
     configurable = configuration.Configuration.from_runnable_config(config)
     user_id = configurable.user_id
     todo_category = configurable.todo_category
-
     # Define the namespace for the memories
     namespace = ("todo", todo_category, user_id)
-
     # Retrieve the most recent memories for context
     existing_items = store.search(namespace)
-
     # Format the existing memories for the Trustcall extractor
     tool_name = "ToDo"
     existing_memories = (
@@ -354,7 +324,6 @@ def update_todos(state: MessagesState, config: RunnableConfig, store: BaseStore)
         if existing_items
         else None
     )
-
     # Merge the chat history and the instruction
     TRUSTCALL_INSTRUCTION_FORMATTED = TRUSTCALL_INSTRUCTION.format(
         time=datetime.now().isoformat()
@@ -365,20 +334,16 @@ def update_todos(state: MessagesState, config: RunnableConfig, store: BaseStore)
             + state["messages"][:-1]
         )
     )
-
     # Initialize the spy for visibility into the tool calls made by Trustcall
     spy = Spy()
-
     # Create the Trustcall extractor for updating the ToDo list
     todo_extractor = create_extractor(
         model, tools=[ToDo], tool_choice=tool_name, enable_inserts=True
     ).with_listeners(on_end=spy)
-
     # Invoke the extractor
     result = todo_extractor.invoke(
         {"messages": updated_messages, "existing": existing_memories}
     )
-
     # Save save the memories from Trustcall to the store
     for r, rmeta in zip(result["responses"], result["response_metadata"]):
         store.put(
@@ -386,10 +351,8 @@ def update_todos(state: MessagesState, config: RunnableConfig, store: BaseStore)
             rmeta.get("json_doc_id", str(uuid.uuid4())),
             r.model_dump(mode="json"),
         )
-
     # Respond to the tool call made in task_mAIstro, confirming the update
     tool_calls = state["messages"][-1].tool_calls
-
     # Extract the changes made by Trustcall and add the the ToolMessage returned to task_mAIstro
     todo_update_msg = extract_tool_info(spy.called_tools, tool_name)
     return {
@@ -405,16 +368,12 @@ def update_todos(state: MessagesState, config: RunnableConfig, store: BaseStore)
 
 def update_instructions(state: MessagesState, config: RunnableConfig, store: BaseStore):
     """Reflect on the chat history and update the memory collection."""
-
     # Get the user ID from the config
     configurable = configuration.Configuration.from_runnable_config(config)
     user_id = configurable.user_id
     todo_category = configurable.todo_category
-
     namespace = ("instructions", todo_category, user_id)
-
     existing_memory = store.get(namespace, "user_instructions")
-
     # Format the memory in the system prompt
     system_msg = CREATE_INSTRUCTIONS.format(
         current_instructions=existing_memory.value if existing_memory else None
@@ -428,7 +387,6 @@ def update_instructions(state: MessagesState, config: RunnableConfig, store: Bas
             )
         ]
     )
-
     # Overwrite the existing memory in the store
     key = "user_instructions"
     store.put(namespace, key, {"memory": new_memory.content})
@@ -467,19 +425,16 @@ def route_message(
 
 # Create the graph + all nodes
 builder = StateGraph(MessagesState, config_schema=configuration.Configuration)
-
 # Define the flow of the memory extraction process
 builder.add_node(task_mAIstro)
 builder.add_node(update_todos)
 builder.add_node(update_profile)
 builder.add_node(update_instructions)
-
 # Define the flow
 builder.add_edge(START, "task_mAIstro")
 builder.add_conditional_edges("task_mAIstro", route_message)
 builder.add_edge("update_todos", "task_mAIstro")
 builder.add_edge("update_profile", "task_mAIstro")
 builder.add_edge("update_instructions", "task_mAIstro")
-
 # Compile the graph
 graph = builder.compile()

@@ -9,7 +9,6 @@
     "chatbot_memory_collection": "./memoryschema_collection_agent.py:graph",
     "chatbot_memory_profile": "./memoryschema_profile_agent.py:graph",
     "memory_agent": "./memory_agent.py:graph"
-
   },
   "python_version": "3.11"
 }

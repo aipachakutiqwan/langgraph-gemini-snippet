@@ -3,7 +3,6 @@ from dataclasses import dataclass, fields
 from typing import Any, Optional
 
 from langchain_core.runnables import RunnableConfig
-from dataclasses import dataclass
 
 
 @dataclass(kw_only=True)
