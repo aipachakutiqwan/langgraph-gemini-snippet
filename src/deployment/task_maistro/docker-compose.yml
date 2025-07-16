@@ -38,6 +38,6 @@ services:
                 condition: service_healthy
         environment:
             REDIS_URI: redis://langgraph-redis:6379
-            GOOGLE_API_KEY: AIzaSyDu015hJqFQHPPou9YA3ZUin8CT_XEyy28
-            LANGSMITH_API_KEY: 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
+            GOOGLE_API_KEY: 
+            LANGSMITH_API_KEY: 
             POSTGRES_URI: postgres://postgres:postgres@langgraph-postgres:5432/postgres?sslmode=disable
