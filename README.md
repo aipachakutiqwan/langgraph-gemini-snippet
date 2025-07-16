@@ -9,7 +9,7 @@ This repository contains a collection of code snippets designed to help you lear
 :heavy_exclamation_mark: **This snippet is not intended for direct use in production**. Do not use it as-is. Instead, use it as a reference: extract the core concept, refactor the code to suit your needs, write appropriate unit tests, and only then consider using it in a production environment.
 
 
-## 📚 Content
+## 📚 Contents
 
 :pushpin: Introduction
 
@@ -59,7 +59,7 @@ export GOOGLE_API_KEY=SET_YOUR_API_KEY_HERE
 * Sign up [here](https://aistudio.google.com/apikey) and set `GOOGLE_API_KEY` in your environment
 
 ### 🌱 LangSmith
-* Sign up for LangSmith [here](https://smith.langchain.com/) and set `LANGCHAIN_API_KEY`, `LANGCHAIN_TRACING_V2=true` in your environment 
+* Sign up for LangSmith [here](https://smith.langchain.com/) and set `LANGCHAIN_API_KEY`, `LANGCHAIN_TRACING_V2=true` in your environment
 
 ### 🌱 Tavily
 * Tavily Search API is a search engine optimized for LLMs and RAG. Sign up [here](https://tavily.com/) and set `TAVILY_API_KEY` in your environment.
